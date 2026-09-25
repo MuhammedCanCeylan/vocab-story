@@ -1,10 +1,10 @@
-import { getState, updateState } from '../services/storage.js';
-import { ensureVocab, getDueWords, reviewWord, setWordStatus } from '../services/srs.js';
-import { parseVocabulary } from './vocabImport.js';
-import { speak } from '../services/speech.js';
-import { icon } from '../ui/icons.js';
-import { openWordModal } from '../ui/wordModal.js';
-import { toast } from '../ui/toast.js';
+import { getState, updateState } from '../services/storage.js?v=4.1.1';
+import { ensureVocab, getDueWords, reviewWord, setWordStatus } from '../services/srs.js?v=4.1.1';
+import { parseVocabulary } from './vocabImport.js?v=4.1.1';
+import { speak } from '../services/speech.js?v=4.1.1';
+import { icon } from '../ui/icons.js?v=4.1.1';
+import { openWordModal } from '../ui/wordModal.js?v=4.1.1';
+import { toast } from '../ui/toast.js?v=4.1.1';
 
 let filter='all';
 let search='';

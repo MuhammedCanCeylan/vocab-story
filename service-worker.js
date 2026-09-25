@@ -1,4 +1,4 @@
-const CACHE='vocabstory-v4-1-shell-v1';
+const CACHE='vocabstory-v4-1-1-shell-v1';
 const SHELL=[
   './','./index.html','./favicon.svg','./manifest.webmanifest',
   './css/tokens.css','./css/app.css','./css/reader.css','./css/responsive.css',
@@ -12,5 +12,17 @@ self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys
 self.addEventListener('fetch',event=>{
   const url=new URL(event.request.url);
   if(event.request.method!=='GET'||url.origin!==self.location.origin)return;
-  event.respondWith(fetch(event.request).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));return response;}).catch(()=>caches.match(event.request).then(hit=>hit||caches.match('./index.html'))));
+  event.respondWith(
+    fetch(event.request).then(response=>{
+      if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));}
+      return response;
+    }).catch(async()=>{
+      const hit=await caches.match(event.request);
+      if(hit)return hit;
+      // Never return HTML as a missing JS/CSS/module resource; that creates misleading parser errors.
+      const dest=event.request.destination;
+      if(['script','style','manifest'].includes(dest))return Response.error();
+      return caches.match('./index.html');
+    })
+  );
 });

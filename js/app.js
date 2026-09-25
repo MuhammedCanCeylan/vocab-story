@@ -1,10 +1,10 @@
-import { APP_CONFIG } from './config.js';
-import { getState, updateState, exportState, importState, resetState } from './services/storage.js';
-import { initSpeech } from './services/speech.js';
-import { hydrateIcons, icon } from './ui/icons.js';
-import { closeWordModal } from './ui/wordModal.js';
-import { toast } from './ui/toast.js';
-import { initRouter, renderRoute } from './router.js';
+import { APP_CONFIG } from './config.js?v=4.1.1';
+import { getState, updateState, exportState, importState, resetState } from './services/storage.js?v=4.1.1';
+import { initSpeech } from './services/speech.js?v=4.1.1';
+import { hydrateIcons, icon } from './ui/icons.js?v=4.1.1';
+import { closeWordModal } from './ui/wordModal.js?v=4.1.1';
+import { toast } from './ui/toast.js?v=4.1.1';
+import { initRouter, renderRoute } from './router.js?v=4.1.1';
 
 function migrateLegacyData() {
   if(localStorage.getItem('vocabstory_v4_legacy_migrated')==='1') return;
@@ -102,8 +102,28 @@ function initSettings() {
 }
 
 async function initPwa() {
-  if('serviceWorker' in navigator && location.protocol!=='file:'){
-    try{await navigator.serviceWorker.register('./service-worker.js');}catch(e){console.warn('Service worker registration failed',e);}
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+  const isLocalDev = ['localhost','127.0.0.1','0.0.0.0'].includes(location.hostname);
+  if (isLocalDev) {
+    // Local development must always load source files from the HTTP server.
+    // Remove old registrations/caches so a stale module can never shadow a new edit.
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(reg => reg.unregister()));
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k.startsWith('vocabstory-')).map(k => caches.delete(k)));
+      }
+      console.info('[VocabStory] local dev: service worker disabled and old caches cleared');
+    } catch (e) {
+      console.warn('Local cache cleanup failed', e);
+    }
+    return;
+  }
+  try {
+    await navigator.serviceWorker.register('./service-worker.js?v=4.1.1', { updateViaCache: 'none' });
+  } catch (e) {
+    console.warn('Service worker registration failed', e);
   }
 }
 

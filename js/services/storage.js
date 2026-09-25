@@ -1,4 +1,4 @@
-import { APP_CONFIG } from '../config.js';
+import { APP_CONFIG } from '../config.js?v=4.1.1';
 
 const defaultState = () => ({
   settings: {

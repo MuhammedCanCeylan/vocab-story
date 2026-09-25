@@ -1,7 +1,7 @@
-import { BOOKS, getBook } from '../data/books.js';
-import { getState, dayKey } from '../services/storage.js';
-import { getDueWords } from '../services/srs.js';
-import { icon } from '../ui/icons.js';
+import { BOOKS, getBook } from '../data/books.js?v=4.1.1';
+import { getState, dayKey } from '../services/storage.js?v=4.1.1';
+import { getDueWords } from '../services/srs.js?v=4.1.1';
+import { icon } from '../ui/icons.js?v=4.1.1';
 
 function weekDays() {
   const result=[];

@@ -1,8 +1,8 @@
-import { getState, updateState, registerActivity } from '../services/storage.js';
-import { speak, evaluateSpeechAttempt, speechMode } from '../services/speech.js';
-import { generateJson, extractGeminiJson } from '../services/gemini.js';
-import { icon } from '../ui/icons.js';
-import { toast } from '../ui/toast.js';
+import { getState, updateState, registerActivity } from '../services/storage.js?v=4.1.1';
+import { speak, evaluateSpeechAttempt, speechMode } from '../services/speech.js?v=4.1.1';
+import { generateJson, extractGeminiJson } from '../services/gemini.js?v=4.1.1';
+import { icon } from '../ui/icons.js?v=4.1.1';
+import { toast } from '../ui/toast.js?v=4.1.1';
 
 const SCENARIOS = [
   {id:'airport',title:'Airport',icon:'plane',desc:'Check-in, baggage, gate ve yön sorma.',phrases:['Where can I check in for this flight?','Is my carry-on bag too heavy?','Which gate should I go to?','How long does the security check usually take?']},

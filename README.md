@@ -1,81 +1,192 @@
+<div align="center">
+
+```
+██╗   ██╗ ██████╗  ██████╗ █████╗ ██████╗ 
+██║   ██║██╔═══██╗██╔════╝██╔══██╗██╔══██╗
+██║   ██║██║   ██║██║     ███████║██████╔╝
+╚██╗ ██╔╝██║   ██║██║     ██╔══██║██╔══██╗
+ ╚████╔╝ ╚██████╔╝╚██████╗██║  ██║██████╔╝
+  ╚═══╝   ╚═════╝  ╚═════╝╚═╝  ╚═╝╚═════╝ 
+
+███████╗████████╗ ██████╗ ██████╗ ██╗   ██╗
+██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗╚██╗ ██╔╝
+███████╗   ██║   ██║   ██║██████╔╝ ╚████╔╝ 
+╚════██║   ██║   ██║   ██║██╔══██╗  ╚██╔╝  
+███████║   ██║   ╚██████╔╝██║  ██║   ██║   
+╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝   
+```
+
 # VocabStory V4.1
 
-VocabStory is a browser-based English learning app built around one loop:
+**A modular, GitHub Pages-ready English learning application built around one core loop**
 
-**Read → Understand → Speak → Review → Remember**
+### Read → Understand → Speak → Review → Remember
 
-V4.1 keeps the modular GitHub Pages-friendly architecture and expands the reader, vocabulary workspace, quiz system and Firefox speech support.
+[![Architecture](https://img.shields.io/badge/Architecture-Vanilla%20ES%20Modules-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](#project-structure)
+[![PWA](https://img.shields.io/badge/PWA-Installable-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](#app--platform-layer)
+[![AI](https://img.shields.io/badge/AI-Gemini%20Powered-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white)](#gemini-configuration)
+[![Deployment](https://img.shields.io/badge/Deploy-GitHub%20Pages-181717?style=for-the-badge&logo=github&logoColor=white)](#github-pages-deployment)
+[![License](https://img.shields.io/badge/Version-4.1-success?style=for-the-badge)](#)
 
-## What is included
+</div>
 
-### Home
-- Daily goal and streak
-- Continue reading
-- Due SRS reviews
-- Weekly activity
-- Recent vocabulary
+---
 
-### Read
-- A1, A2 and B1 built-in graded stories
-- Chapter vocabulary preview with learning/review/mastered status colors
-- Full unique chapter word list with search
-- Click any word to fetch/cache contextual Turkish meaning, IPA and English explanation
-- Batch “prepare all Turkish meanings” action
-- Multi-word phrase recognition (`pick up`, `instead of`, etc.)
-- Word / phrase learning panel
-- IPA, English definition, Turkish context meaning and example sentence
+## Table of Contents
+
+- [Overview](#overview)
+- [System Architecture & Data Flow](#system-architecture--data-flow)
+- [Feature Modules](#feature-modules)
+  - [Home](#-home)
+  - [Read](#-read)
+  - [Speak](#-speak)
+  - [Vocabulary](#-vocabulary)
+  - [Progress](#-progress)
+  - [App / Platform Layer](#-app--platform-layer)
+- [Project Structure](#project-structure)
+- [Local Development](#local-development)
+- [GitHub Pages Deployment](#github-pages-deployment)
+- [Gemini Configuration](#gemini-configuration)
+- [Legacy (V3 → V4) Migration](#legacy-v3--v4-migration)
+- [Firefox Speech Fallback](#firefox-speech-fallback)
+- [Security Considerations](#security-considerations)
+- [Roadmap](#roadmap)
+
+---
+
+## Overview
+
+**VocabStory** is a browser-based English learning application designed around a single, repeatable learning loop: a learner reads graded content, looks up and internalizes new vocabulary in context, practices speaking it aloud, and reviews it over time through spaced repetition until it is retained long-term.
+
+Version **4.1** preserves the modular, dependency-light architecture introduced in V4 — built entirely on native ES modules, with no build step required — while expanding the reading engine, the vocabulary workspace, the quiz system, and Firefox/Floorp speech support.
+
+The application is designed to run as a fully static site (ideal for **GitHub Pages**), with all AI functionality (Gemini-based translation, story generation, and speech evaluation) treated as an optional, user-configured enhancement rather than a hard dependency.
+
+---
+
+## System Architecture & Data Flow
+
+```mermaid
+flowchart TD
+    U(("👤 Learner")) --> APP["🧩 app.js<br/>(Router & Module Loader)"]
+
+    APP --> HOME["🏠 Home Module"]
+    APP --> READ["📖 Read Module"]
+    APP --> SPEAK["🗣️ Speak Module"]
+    APP --> VOCAB["🧠 Vocabulary Module"]
+    APP --> PROG["📊 Progress Module"]
+
+    READ -->|"Word/Sentence Lookup"| DICT["📚 dictionary.js"]
+    READ -->|"TTS Playback"| SPEECH["🔊 speech.js"]
+    READ -->|"Story Generation"| GEMINI["🤖 gemini.js<br/>(Retry + Fallback Chain)"]
+
+    SPEAK -->|"Native Recognition"| SPEECH
+    SPEAK -->|"MediaRecorder (Firefox)"| GEMINI
+
+    VOCAB --> SRS["🔁 srs.js<br/>(Spaced Repetition Scheduler)"]
+    VOCAB -->|"Smart Paste Import"| IMPORT["📥 vocabImport.js"]
+
+    HOME --> STORAGE[("💾 storage.js<br/>vocabstory_v4_state")]
+    READ --> STORAGE
+    SPEAK --> STORAGE
+    VOCAB --> STORAGE
+    PROG --> STORAGE
+    SRS --> STORAGE
+
+    STORAGE --> SW["⚙️ service-worker.js<br/>(Network-First Cache)"]
+
+    subgraph "Optional AI Layer"
+        GEMINI -->|"API Key (Settings)"| DIRECT["🔑 Direct Gemini Call"]
+        GEMINI -->|"or"| PROXY["🛡️ Backend Proxy Endpoint"]
+    end
+```
+
+**Data flow summary:**
+`Learner Interaction` → `Router (app.js)` → `Feature Module` → `Service Layer (dictionary / speech / gemini / srs)` → `storage.js (localStorage: vocabstory_v4_state)` → `Service Worker (offline cache & PWA shell)`
+
+> Note: All learner data — vocabulary pool, SRS state, saved sentences, activity history — is persisted client-side. No backend database is required unless the optional proxy endpoint is configured for Gemini calls.
+
+---
+
+## Feature Modules
+
+### 🏠 Home
+
+- Daily goal tracking and streak counter
+- "Continue reading" shortcut to the last active chapter
+- Due SRS reviews surfaced at a glance
+- Weekly activity overview
+- Recently learned vocabulary
+
+### 📖 Read
+
+- Built-in graded stories across CEFR levels **A1**, **A2**, and **B1**
+- Chapter vocabulary preview with color-coded learning / review / mastered status
+- Full, searchable, de-duplicated chapter word list
+- Click-to-fetch contextual lookup: Turkish meaning, IPA transcription, and English definition (cached after first fetch)
+- Batch **"Prepare all Turkish meanings"** action for an entire chapter
+- Multi-word phrase recognition (e.g. `pick up`, `instead of`)
+- Dedicated word/phrase learning panel: IPA, English definition, Turkish contextual meaning, and example sentence
 - Sentence-level Turkish translation
-- Sentence and full-chapter TTS
-- Save sentence feature
-- Chapter comprehension quiz
-- Vocabulary Lab: Turkish meaning, English definition and fill-the-gap questions
+- Sentence-level and full-chapter text-to-speech
+- "Save sentence" for later review
+- Chapter comprehension quizzes
+- **Vocabulary Lab** — Turkish meaning, English definition, and fill-the-gap exercises
 - Grammar Discovery cards
-- AI retelling feedback
-- Focus / Learning reader modes
-- Reading progress and word count
-- AI graded-story generator using the user's vocabulary pool
+- AI-assisted feedback on user retellings
+- Focus mode and Learning mode reading layouts
+- Live reading progress and word-count tracking
+- AI-generated graded stories built from the learner's own vocabulary pool
 
-### Speak
-- Airport, café, hotel and work scenarios
-- TTS shadowing
-- Browser speech recognition when supported
-- Firefox/Floorp fallback: MediaRecorder → Gemini audio evaluation
-- Approximate sentence similarity score
-- Gemini-generated roleplay with model fallback
+### 🗣️ Speak
 
-### Vocabulary
-- SRS review queue
+- Scenario-based practice: airport, café, hotel, and workplace
+- Text-to-speech shadowing exercises
+- Native browser speech recognition where supported (Chromium-based browsers)
+- **Firefox / Floorp fallback:** `MediaRecorder` capture → Gemini audio evaluation
+- Approximate sentence similarity scoring
+- Gemini-generated roleplay dialogue with automatic model fallback
+
+### 🧠 Vocabulary
+
+- Full spaced-repetition (SRS) review queue
 - Again / Hard / Good / Easy review actions
-- Search and All / Learning / Review / Mastered filters
-- Full-row status colors for learning, review and mastered words
+- Search plus All / Learning / Review / Mastered filters
+- Full-row color coding by learning status
 - Bulk word selection
-- Study the selected/current filtered list as flashcards
-- Copy the selected/current filtered list
-- Send selected/review words directly to the AI story builder
-- Quizlet-like smart paste importer
-- Supports `word - meaning`, tab-separated and alternating word/meaning lines
-- Removes copied UI noise such as `star filled`, `sound`, `edit`
-- Saved sentences
+- Study the selected or currently filtered list as flashcards
+- Copy the selected or currently filtered list to clipboard
+- Send selected or due-for-review words directly into the AI story builder
+- **Quizlet-style smart paste importer**, supporting:
+  - `word - meaning` format
+  - Tab-separated values
+  - Alternating word/meaning lines
+  - Automatic stripping of copied UI noise (`star filled`, `sound`, `edit`, etc.)
+- Saved sentence library
 
-### Progress
-- Words read
-- Mastered vocabulary
+### 📊 Progress
+
+- Total words read
+- Mastered vocabulary count
 - Quiz accuracy
-- Speaking average
+- Speaking average score
 - Weekly activity chart
-- Book progress
-- Milestones
+- Per-book reading progress
+- Milestone tracking
 
-### App / platform
-- Modular ES modules
-- Light / dark mode
-- PWA shell + service worker
-- Mobile bottom navigation
-- Old V3 vocabulary, API key and activity migration
-- Gemini retry + fallback model chain
-- Optional backend proxy endpoint
+### ⚙️ App / Platform Layer
 
-## Project structure
+- Modular, dependency-free ES modules (no bundler required)
+- Light / dark theme support
+- Full PWA shell with service worker (installable, offline-capable)
+- Mobile-first bottom navigation
+- Automatic migration of legacy V3 vocabulary, API key, and activity data
+- Gemini retry and multi-model fallback chain
+- Optional backend proxy endpoint for production-safe API key handling
+
+---
+
+## Project Structure
 
 ```text
 vocab-story-v4/
@@ -91,11 +202,11 @@ vocab-story-v4/
 │  ├─ reader.css
 │  └─ responsive.css
 └─ js/
-   ├─ app.js
-   ├─ config.js
+   ├─ app.js                  # Router & module orchestration
+   ├─ config.js                # App-wide configuration (default AI model, etc.)
    ├─ router.js
    ├─ data/
-   │  └─ books.js
+   │  └─ books.js              # Built-in graded story catalog
    ├─ modules/
    │  ├─ home.js
    │  ├─ read.js
@@ -104,20 +215,22 @@ vocab-story-v4/
    │  ├─ vocabImport.js
    │  └─ progress.js
    ├─ services/
-   │  ├─ gemini.js
-   │  ├─ speech.js
-   │  ├─ dictionary.js
-   │  ├─ srs.js
-   │  └─ storage.js
+   │  ├─ gemini.js              # AI calls, retry/fallback chain
+   │  ├─ speech.js               # TTS + speech recognition
+   │  ├─ dictionary.js           # Word/sentence lookup & caching
+   │  ├─ srs.js                  # Spaced repetition scheduler
+   │  └─ storage.js              # Local persistence layer
    └─ ui/
       ├─ icons.js
       ├─ toast.js
       └─ wordModal.js
 ```
 
-## Run locally
+---
 
-ES modules should be served over HTTP rather than opened with `file://`.
+## Local Development
+
+ES modules must be served over HTTP — opening `index.html` directly via `file://` will not work due to browser module-loading restrictions.
 
 ```bash
 cd vocab-story-v4.1
@@ -130,65 +243,88 @@ Then open:
 http://localhost:8080
 ```
 
-## GitHub Pages
+On Windows, you can alternatively double-click `start.bat`.
 
-Upload the **contents** of `vocab-story-v4.1/` to the repository/folder used by GitHub Pages. All asset paths are relative, so a project URL such as:
+---
 
-```text
-https://USERNAME.github.io/vocab-story/
-```
+## GitHub Pages Deployment
 
-is supported.
+1. Upload the **contents** of `vocab-story-v4.1/` (not the folder itself) to the repository or branch configured for GitHub Pages.
+2. All asset paths are relative, so project-page URLs of the form:
 
-After replacing an older VocabStory deployment, do one hard refresh (`Ctrl + Shift + R`). The V4 service worker is network-first and updates its cache as the new files are requested.
+   ```text
+   https://USERNAME.github.io/vocab-story/
+   ```
 
-## Gemini configuration
+   are fully supported without additional path configuration.
 
-Default preferred model is defined in:
+3. If replacing an older VocabStory deployment, perform **one hard refresh** (`Ctrl + Shift + R`). The V4 service worker uses a network-first caching strategy and will refresh its cache automatically as new files are requested.
+
+---
+
+## Gemini Configuration
+
+The default preferred model is defined centrally in:
 
 ```js
 // js/config.js
 preferredModel: 'gemini-3.8-flash'
 ```
 
-The app includes retry/fallback behavior in `js/services/gemini.js`.
+Retry and fallback behavior across multiple models is implemented in `js/services/gemini.js`.
 
-You can configure either:
+Two configuration paths are supported:
 
-1. A Gemini API key in **Settings → AI**, or
-2. A backend proxy endpoint.
+| Option | Description |
+|---|---|
+| **1. Direct API key** | Set under **Settings → AI**. Simplest setup; suitable for personal/local use. |
+| **2. Backend proxy endpoint** | Recommended for public deployments — keeps the provider API key server-side. |
 
-### Security note
+---
 
-A Gemini API key used directly from a static GitHub Pages site is visible to the browser user in DevTools / Network. For a public production deployment, use the proxy option and keep the provider API key on the server.
+## Legacy (V3 → V4) Migration
 
-## Legacy migration
-
-On the first V4 launch, the app can migrate these old V3 browser values:
+On first launch, V4 automatically detects and migrates the following legacy V3 browser values:
 
 - `vocab_pool`
 - `gemini_api_key`
 - `gemini_model`
 - `vocabstory_activity`
 
-V4 itself stores its application state under:
+V4 itself stores all application state under a single key:
 
 ```text
 vocabstory_v4_state
 ```
 
-On Windows you can also double-click `start.bat`.
+---
 
-## Firefox speech fallback
+## Firefox Speech Fallback
 
-Firefox does not expose the same native `SpeechRecognition` path used by Chromium browsers. V4.1 records a short microphone clip with `MediaRecorder` and sends it to Gemini for transcription/pronunciation matching when AI settings are configured. Text-to-speech still uses the browser `speechSynthesis` engine.
+Firefox does not expose the same native `SpeechRecognition` API path used by Chromium-based browsers. To keep the Speak module functional across browsers, V4.1 records a short microphone clip using `MediaRecorder` and sends it to Gemini for transcription and pronunciation matching — provided AI settings have been configured. Text-to-speech playback continues to use the browser's native `speechSynthesis` engine in all supported browsers.
 
-## Next suggested milestones
+---
 
-- Public-domain book catalog stored as separate JSON files
-- Streaming audiobook word highlighting
-- Per-user cloud accounts and sync
-- Proper server-side Gemini proxy
-- AI tutor for selected sentences and grammar questions
-- Rich SRS scheduling / learning history
-- Book search, tags and downloadable offline packs
+## Security Considerations
+
+A Gemini API key configured directly on a static GitHub Pages deployment is visible to any user via browser DevTools / Network inspection. For public production deployments, use the **backend proxy** configuration option and keep the provider API key server-side rather than embedding it client-side.
+
+---
+
+## Roadmap
+
+- [ ] Public-domain book catalog stored as separate JSON files
+- [ ] Streaming audiobook playback with synchronized word highlighting
+- [ ] Per-user cloud accounts with cross-device sync
+- [ ] Production-grade server-side Gemini proxy
+- [ ] AI tutor for selected sentences and grammar questions
+- [ ] Richer SRS scheduling with full learning history
+- [ ] Book search, tagging, and downloadable offline content packs
+
+---
+
+<div align="center">
+
+**VocabStory V4.1** — Read → Understand → Speak → Review → Remember
+
+</div>

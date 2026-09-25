@@ -1,6 +1,6 @@
-import { getState, updateState } from './storage.js';
-import { normalizeKey } from './srs.js';
-import { generateJson, extractGeminiJson } from './gemini.js';
+import { getState, updateState } from './storage.js?v=4.1.1';
+import { normalizeKey } from './srs.js?v=4.1.1';
+import { generateJson, extractGeminiJson } from './gemini.js?v=4.1.1';
 
 function fromVocabulary(word) {
   const key=normalizeKey(word);

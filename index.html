@@ -689,7 +689,7 @@
             <label for="apiKeyInput" class="field-label">API ANAHTARI</label>
             <input id="apiKeyInput" type="password" class="input" placeholder="AIzaSy..." autocomplete="off" />
             <label for="modelInput" class="field-label" style="display:block;margin:10px 0 6px;color:var(--muted);font-size:11px;font-weight:750">MODEL ADI</label>
-            <input id="modelInput" type="text" class="input" placeholder="gemini-2.5-flash" autocomplete="off" spellcheck="false" />
+            <input id="modelInput" type="text" class="input" placeholder="gemini-3.8-flash" autocomplete="off" spellcheck="false" />
             <p style="margin:7px 1px 0">Model adı değişirse kodu düzenlemeden buradan güncelleyebilirsin.</p>
           </section>
         </div>
@@ -748,9 +748,17 @@
     let speechVoices = [];
     let lessonActivity = safeParse(localStorage.getItem('vocabstory_activity'), { streak:0, lastDate:'', lessonsToday:0 });
 
+    const GEMINI_MODEL = 'gemini-3.8-flash';
+
     let vocabPool = safeParse(localStorage.getItem('vocab_pool'), []);
     let apiKey = localStorage.getItem('gemini_api_key') || '';
-    let geminiModel = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
+    let geminiModel = localStorage.getItem('gemini_model') || GEMINI_MODEL;
+
+    // Eski VocabStory sürümlerinden kalan model kaydını otomatik güncelle.
+    if (geminiModel === 'gemini-2.5-flash') {
+      geminiModel = GEMINI_MODEL;
+      localStorage.setItem('gemini_model', GEMINI_MODEL);
+    }
 
     const ICONS = {
       'moon':'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',

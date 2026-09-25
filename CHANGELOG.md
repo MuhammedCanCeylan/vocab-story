@@ -1,5 +1,34 @@
 # Changelog
 
+## 4.1.0 — 2026-09-25
+
+### Reader & dictionary
+- Added a searchable list of every unique word in each chapter.
+- Any non-target word can request a contextual Turkish meaning, IPA and simple English definition through Gemini and cache the result locally.
+- Added batch preparation of Turkish meanings for a full chapter.
+- Added visible learning/review/mastered states to chapter target vocabulary and reader tokens.
+- Added one-click “move all chapter targets to Review”.
+
+### Vocabulary workspace
+- Added All / Learning / Review / Mastered counters and filters.
+- Word rows now change their full visual treatment based on status.
+- Added bulk selection, filtered-list study mode, list copy and story-builder actions.
+- Selected or filtered words can seed a new AI graded story.
+- Added a dedicated flashcard study session for any filtered/selected list.
+
+### Quiz
+- Added Vocabulary Lab questions alongside comprehension: Turkish meaning, English definition and contextual fill-the-gap.
+
+### Firefox / Floorp speech
+- Hardened browser TTS voice loading.
+- Added MediaRecorder + Gemini audio fallback when native SpeechRecognition is unavailable.
+- Audio is sent as a supported inline audio MIME payload and scored against the target sentence.
+
+### Platform
+- Added a dictionary cache to V4 state.
+- Bumped the service-worker cache namespace.
+- Added `start.bat` and `start.ps1` for local Windows development.
+
 ## 4.0.0 — 2026-09-25
 
 ### Architecture

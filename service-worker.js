@@ -1,9 +1,9 @@
-const CACHE='vocabstory-v4-shell-v1';
+const CACHE='vocabstory-v4-1-shell-v1';
 const SHELL=[
   './','./index.html','./favicon.svg','./manifest.webmanifest',
   './css/tokens.css','./css/app.css','./css/reader.css','./css/responsive.css',
   './js/app.js','./js/config.js','./js/router.js','./js/data/books.js',
-  './js/services/storage.js','./js/services/srs.js','./js/services/speech.js','./js/services/gemini.js',
+  './js/services/storage.js','./js/services/srs.js','./js/services/speech.js','./js/services/gemini.js','./js/services/dictionary.js',
   './js/ui/icons.js','./js/ui/toast.js','./js/ui/wordModal.js',
   './js/modules/home.js','./js/modules/read.js','./js/modules/speak.js','./js/modules/vocabulary.js','./js/modules/vocabImport.js','./js/modules/progress.js'
 ];

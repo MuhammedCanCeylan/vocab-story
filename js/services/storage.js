@@ -10,6 +10,8 @@ const defaultState = () => ({
     proxyEndpoint: ''
   },
   vocabulary: [],
+  dictionary: {},
+  storyBuilderWordIds: [],
   generatedLessons: [],
   savedSentences: [],
   reading: {

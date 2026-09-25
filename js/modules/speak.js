@@ -1,5 +1,5 @@
 import { getState, updateState, registerActivity } from '../services/storage.js';
-import { speak, recognizeOnce, similarity } from '../services/speech.js';
+import { speak, evaluateSpeechAttempt, speechMode } from '../services/speech.js';
 import { generateJson, extractGeminiJson } from '../services/gemini.js';
 import { icon } from '../ui/icons.js';
 import { toast } from '../ui/toast.js';
@@ -17,7 +17,7 @@ let activeSentence=SCENARIOS[0].phrases[0];
 export function renderSpeak(container) {
   const state=getState();
   container.innerHTML=`<section class="page">
-    <header class="page-header"><div><span class="eyebrow">Real-world practice</span><h1>Speak</h1><p>Hazır günlük senaryolarla konuş. Cümleyi dinle, sesli tekrar et ve yaklaşık eşleşme skorunu gör.</p></div><span class="badge">Best ${Math.round((state.speaking.bestScore||0)*100)}%</span></header>
+    <header class="page-header"><div><span class="eyebrow">Real-world practice</span><h1>Speak</h1><p>Hazır günlük senaryolarla konuş. Cümleyi dinle, sesli tekrar et ve yaklaşık eşleşme skorunu gör.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><span class="badge">${speechMode()==='native'?'Native speech':speechMode()==='gemini-audio'?'Firefox · Gemini audio':'Mic unavailable'}</span><span class="badge">Best ${Math.round((state.speaking.bestScore||0)*100)}%</span></div></header>
     <div class="speak-layout">
       <div class="card">
         <div class="card-title"><h2>Bir durum seç</h2><span class="pill">${state.settings.level}</span></div>
@@ -44,8 +44,15 @@ function renderScenarioPractice(container) {
   area.querySelector('#listenSentenceButton')?.addEventListener('click',()=>speak(activeSentence,.82));
   area.querySelector('#recordSentenceButton')?.addEventListener('click',async()=>{
     const button=area.querySelector('#recordSentenceButton'); const scoreNode=area.querySelector('#speechScore');
-    button.disabled=true; button.textContent='Dinleniyor…';
-    try{const spoken=await recognizeOnce();const score=similarity(activeSentence,spoken);scoreNode.className=`speech-score ${score>=.72?'success':'warn'}`;scoreNode.textContent=`%${Math.round(score*100)} eşleşme · “${spoken}”`;updateState(s=>{s.speaking.attempts++;s.speaking.totalScore+=score;s.speaking.bestScore=Math.max(s.speaking.bestScore||0,score);});registerActivity('speaking',1);}catch(err){toast(err.message||'Mikrofon kullanılamadı.');}finally{button.disabled=false;button.innerHTML=`${icon('mic')} Ben söyleyeyim`;}
+    button.disabled=true;
+    try{
+      const result=await evaluateSpeechAttempt(activeSentence,{level:getState().settings.level,onStatus:label=>{button.textContent=label;}});
+      const score=result.score;
+      scoreNode.className=`speech-score ${score>=.72?'success':'warn'}`;
+      scoreNode.innerHTML=`<strong>%${Math.round(score*100)} eşleşme</strong>${result.transcript?` · “${escapeHtml(result.transcript)}”`:''}${result.feedbackTr?`<small style="display:block;margin-top:6px">${escapeHtml(result.feedbackTr)}</small>`:''}${result.mode==='gemini-audio'?`<small style="display:block;margin-top:4px">Firefox fallback · ${escapeHtml(result.model||'Gemini audio')}</small>`:''}`;
+      updateState(s=>{s.speaking.attempts++;s.speaking.totalScore+=score;s.speaking.bestScore=Math.max(s.speaking.bestScore||0,score);});registerActivity('speaking',1);
+    }catch(err){console.error(err);toast(err.status===401?'Firefox ses değerlendirmesi için AI ayarlarında Gemini API anahtarı veya proxy gerekli.':(err.message||'Mikrofon kullanılamadı.'));}
+    finally{button.disabled=false;button.innerHTML=`${icon('mic')} Ben söyleyeyim`;}
   });
 }
 

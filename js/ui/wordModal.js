@@ -1,6 +1,6 @@
 import { icon } from './icons.js';
 import { speak } from '../services/speech.js';
-import { ensureVocab, normalizeKey } from '../services/srs.js';
+import { ensureVocab, normalizeKey, setWordStatus } from '../services/srs.js';
 import { getState } from '../services/storage.js';
 import { toast } from './toast.js';
 
@@ -9,6 +9,8 @@ let activeEntry = null;
 export function isSaved(word) {
   return getState().vocabulary.some(v => normalizeKey(v.word) === normalizeKey(word));
 }
+
+function savedItem(word){return getState().vocabulary.find(v=>normalizeKey(v.word)===normalizeKey(word))||null;}
 
 export function openWordModal(entry) {
   activeEntry = entry;
@@ -19,29 +21,38 @@ export function openWordModal(entry) {
   if (!modal || !title || !body) return;
   title.textContent = entry.word;
   meta.textContent = [entry.level, entry.type].filter(Boolean).join(' · ') || 'Vocabulary';
-  const saved = isSaved(entry.word);
+  const saved = savedItem(entry.word);
+  const status=saved?.status||'unsaved';
   body.innerHTML = `
     <div class="word-ipa">${escapeHtml(entry.ipa || 'IPA not available')}</div>
     <div class="word-definition">
       <strong>Explain in English</strong>
       <p>${escapeHtml(entry.definitionEn || 'No English definition is available yet.')}</p>
     </div>
-    <button class="ghost-button" id="toggleTurkishMeaning" type="button" style="width:100%;margin-top:10px">Türkçe anlamı göster</button>
-    <div class="word-definition" id="turkishMeaningBlock" style="margin-top:10px;display:none">
+    <div class="word-definition" style="margin-top:10px">
       <strong>Türkçe bağlam anlamı</strong>
       <p>${escapeHtml(entry.meaningTr || 'Henüz Türkçe anlam eklenmemiş.')}</p>
     </div>
     ${entry.example ? `<div class="word-example"><p>${escapeHtml(entry.example)}</p></div>` : ''}
+    <div class="word-status-actions" id="modalStatusActions">
+      <button class="word-status-btn learning ${status==='learning'?'active':''}" data-status="learning" type="button">${icon('plus')} Öğrenilecek</button>
+      <button class="word-status-btn review ${status==='review'?'active':''}" data-status="review" type="button">${icon('rotate')} Tekrar</button>
+      <button class="word-status-btn mastered ${status==='mastered'?'active':''}" data-status="mastered" type="button">${icon('check')} Biliyorum</button>
+    </div>
     <div class="word-modal-actions">
       <button class="secondary-button" id="wordListenButton" type="button">${icon('volume')} Dinle</button>
-      <button class="primary-button" id="wordSaveButton" type="button" ${saved ? 'disabled' : ''}>${icon(saved ? 'check':'plus')} ${saved ? 'Kelime havuzunda':'Kelime havuzuna ekle'}</button>
+      <button class="ghost-button" id="wordCloseButton" type="button">Kapat</button>
     </div>`;
   document.getElementById('wordListenButton')?.addEventListener('click', () => speak(entry.word,.8));
-  document.getElementById('toggleTurkishMeaning')?.addEventListener('click', e => { const block=document.getElementById('turkishMeaningBlock'); const show=block.style.display==='none'; block.style.display=show?'block':'none'; e.currentTarget.textContent=show?'Türkçe anlamı gizle':'Türkçe anlamı göster'; });
-  document.getElementById('wordSaveButton')?.addEventListener('click', () => {
-    ensureVocab({...entry, source:entry.source || 'reader'});
-    toast(`“${entry.word}” tekrar sistemine eklendi.`);
-    closeWordModal();
+  document.getElementById('wordCloseButton')?.addEventListener('click',closeWordModal);
+  document.getElementById('modalStatusActions')?.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-status]');if(!btn)return;
+    const item=ensureVocab({...entry,source:entry.source||'reader'});if(!item)return;
+    setWordStatus(item.id,btn.dataset.status);
+    document.querySelectorAll('#modalStatusActions [data-status]').forEach(x=>x.classList.toggle('active',x===btn));
+    const encoded=encodeURIComponent(normalizeKey(entry.word));
+    document.querySelectorAll(`[data-word-key="${encoded}"]`).forEach(el=>{el.classList.remove('status-unsaved','status-learning','status-review','status-mastered');el.classList.add(`status-${btn.dataset.status}`);const small=el.querySelector('small');if(small&&el.classList.contains('chapter-vocab-pill'))small.textContent=btn.dataset.status==='mastered'?'Öğrenildi':btn.dataset.status==='review'?'Tekrar':'Öğreniliyor';});
+    toast(btn.dataset.status==='mastered'?`“${entry.word}” öğrenildi olarak işaretlendi.`:btn.dataset.status==='review'?`“${entry.word}” tekrar listesine alındı.`:`“${entry.word}” öğrenme listesine eklendi.`);
   });
   modal.classList.add('visible');
   modal.setAttribute('aria-hidden','false');

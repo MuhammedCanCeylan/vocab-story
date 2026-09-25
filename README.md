@@ -1,80 +1,177 @@
-# VocabStory — English, lived.
+# VocabStory V4
 
-Kendi kelime havuzundan kişiselleştirilmiş İngilizce hikâyeler, diyaloglar ve günlük senaryolar üreten; okuma, dinleme, telaffuz pratiği ve anlama kontrolünü tek ekranda birleştiren, tamamen istemci tarafında (client-side) çalışan bir İngilizce öğrenme uygulaması.
+VocabStory is a browser-based English learning app built around one loop:
 
-Google Gemini API üzerinden içerik üretir, kelime havuzunu ve tercihleri tarayıcının `localStorage`'ında saklar. Sunucu veya backend gerektirmez — tek bir `.html` dosyasıdır.
+**Read → Understand → Speak → Review → Remember**
 
----
+V4 replaces the old single-file prototype with a modular, GitHub Pages-friendly architecture.
 
-## Özellikler
+## What is included
 
-- **Kişisel kelime havuzu** — Quizlet benzeri metinleri (word–anlam çiftleri, sekme/CSV, alt alta liste) otomatik ayrıştırarak içe aktarır.
-- **AI destekli içerik üretimi** — Seçilen kelimelerden, seviyeye (A1–C2) ve formata (hikâye / diyalog / günlük senaryo) göre özgün metin üretir.
-- **Etkileşimli okuma** — Metindeki her kelimeye dokunarak telaffuzunu dinleyebilir, anlamını görebilir ve havuza ekleyebilirsiniz. Hedef kelimeler metin içinde vurgulanır.
-- **Shadowing (konuşma pratiği)** — Web Speech API ile mikrofon üzerinden okunan cümle, hedef cümleyle karşılaştırılıp benzerlik oranı hesaplanır.
-- **Anlama kontrolü (quiz)** — Üretilen metne dayalı, açıklamalı çoktan seçmeli soru.
-- **İlerleme takibi** — Öğrenilen / tekrar edilecek kelime sayıları ve halka (ring) grafikle görsel ilerleme özeti.
-- **Yedekleme** — Kelime havuzunu JSON olarak dışa/içe aktarma.
-- **Açık/koyu tema** — Sistem tercihine duyarlı, elle değiştirilebilir.
-- **Tam responsive** — Masaüstünde iki kolonlu dashboard, mobilde alt sekme çubuğu (tab bar) ve tek kolon düzen.
+### Home
+- Daily goal and streak
+- Continue reading
+- Due SRS reviews
+- Weekly activity
+- Recent vocabulary
 
----
+### Read
+- A1, A2 and B1 built-in graded stories
+- Chapter vocabulary preview
+- Multi-word phrase recognition (`pick up`, `instead of`, etc.)
+- Word / phrase learning panel
+- IPA, English definition, Turkish context meaning and example sentence
+- Sentence-level Turkish translation
+- Sentence and full-chapter TTS
+- Save sentence feature
+- Chapter comprehension quiz
+- Grammar Discovery cards
+- AI retelling feedback
+- Focus / Learning reader modes
+- Reading progress and word count
+- AI graded-story generator using the user's vocabulary pool
 
-## Kurulum ve Çalıştırma
+### Speak
+- Airport, café, hotel and work scenarios
+- TTS shadowing
+- Browser speech recognition when supported
+- Approximate sentence similarity score
+- Gemini-generated roleplay with model fallback
 
-Herhangi bir derleme adımı gerekmez.
+### Vocabulary
+- SRS review queue
+- Again / Hard / Good / Easy review actions
+- Search and status filters
+- Quizlet-like smart paste importer
+- Supports `word - meaning`, tab-separated and alternating word/meaning lines
+- Removes copied UI noise such as `star filled`, `sound`, `edit`
+- Saved sentences
 
-1. `vocabstory-modern-v2.html` dosyasını bir tarayıcıda açın (çift tıklayarak veya basit bir statik sunucuyla: `npx serve .`).
-2. Sağ üstteki **⚙ Ayarlar** ikonuna tıklayın.
-3. **Gemini API** bölümüne kendi [Google AI Studio](https://aistudio.google.com/) API anahtarınızı girin.
-4. Model adını gerekirse güncelleyin (varsayılan: `gemini-2.5-flash`).
-5. **Kelime içe aktar** alanına kelime listenizi yapıştırın, **Değişiklikleri kaydet**'e tıklayın.
-6. Ana ekrandan format ve seviye seçip **Yeni bölüm oluştur**'a basın.
+### Progress
+- Words read
+- Mastered vocabulary
+- Quiz accuracy
+- Speaking average
+- Weekly activity chart
+- Book progress
+- Milestones
 
-> ⚠️ API anahtarı yalnızca tarayıcının `localStorage`'ında tutulur. Bu, hızlı prototipleme için uygundur ancak **üretim/paylaşımlı ortamda güvenli değildir** — anahtarın istemci tarafında görünür olmaması için bir backend proxy kullanılması önerilir.
+### App / platform
+- Modular ES modules
+- Light / dark mode
+- PWA shell + service worker
+- Mobile bottom navigation
+- Old V3 vocabulary, API key and activity migration
+- Gemini retry + fallback model chain
+- Optional backend proxy endpoint
 
----
+## Project structure
 
-## Teknoloji
-
-| Katman | Kullanılan |
-|---|---|
-| Arayüz | Saf HTML + CSS (framework yok) |
-| Mantık | Vanilla JavaScript (framework yok) |
-| İçerik üretimi | Google Gemini API (`generateContent`, JSON çıktı modu) |
-| Ses | Web Speech API (`SpeechSynthesis` + `SpeechRecognition`) |
-| Veri saklama | `localStorage` (kelime havuzu, tema, API ayarları) |
-
----
-
-## Tasarım Sistemi
-
-- **Renk/tema:** CSS custom property tabanlı, `color-mix()` ile üretilen açık/koyu tema değişkenleri (`:root` ve `[data-theme="dark"]`).
-- **Tipografi:** Arayüzde sistem fontu (SF Pro / Inter), okuma alanında bilinçli olarak serif (Georgia) — uzun metinde okunabilirliği artırmak için.
-- **Bileşenler:** Tutarlı radius skalası (`--radius-sm/md/lg/xl`), glassmorphism kart yüzeyleri (`backdrop-filter: blur`), yumuşak gölge katmanları.
-- **Erişilebilirlik:** `prefers-reduced-motion` desteği, `aria-live` toast bildirimleri, `aria-modal` diyaloglar, güvenli alan (safe-area-inset) desteği.
-- **Duyarlı tasarım:** 900px ve 640px kırılım noktaları; mobilde yan panel gizlenip alt tab bar'a geçiş yapılır.
-
----
-
-## Klasör Yapısı
-
-Proje tek dosyadan oluşur:
-
+```text
+vocab-story-v4/
+├─ index.html
+├─ favicon.svg
+├─ manifest.webmanifest
+├─ service-worker.js
+├─ README.md
+├─ CHANGELOG.md
+├─ css/
+│  ├─ tokens.css
+│  ├─ app.css
+│  ├─ reader.css
+│  └─ responsive.css
+└─ js/
+   ├─ app.js
+   ├─ config.js
+   ├─ router.js
+   ├─ data/
+   │  └─ books.js
+   ├─ modules/
+   │  ├─ home.js
+   │  ├─ read.js
+   │  ├─ speak.js
+   │  ├─ vocabulary.js
+   │  ├─ vocabImport.js
+   │  └─ progress.js
+   ├─ services/
+   │  ├─ gemini.js
+   │  ├─ speech.js
+   │  ├─ srs.js
+   │  └─ storage.js
+   └─ ui/
+      ├─ icons.js
+      ├─ toast.js
+      └─ wordModal.js
 ```
-vocabstory-modern-v2.html   # HTML + CSS + JS bir arada
+
+## Run locally
+
+ES modules should be served over HTTP rather than opened with `file://`.
+
+```bash
+cd vocab-story-v4
+python -m http.server 8080
 ```
 
----
+Then open:
 
-## Bilinen Sınırlamalar
+```text
+http://localhost:8080
+```
 
-- API anahtarı yalnızca istemci tarafında saklanır; canlıya alınacaksa backend proxy önerilir.
-- Konuşma tanıma (`SpeechRecognition`), yalnızca Chromium tabanlı tarayıcılarda desteklenir; diğer tarayıcılarda shadowing özelliği devre dışı kalır.
-- Veriler yalnızca tarayıcı `localStorage`'ında tutulur; tarayıcı verisi temizlenirse kelime havuzu kaybolur (düzenli JSON yedek alınması önerilir).
+## GitHub Pages
 
----
+Upload the **contents** of `vocab-story-v4/` to the repository/folder used by GitHub Pages. All asset paths are relative, so a project URL such as:
 
-## Lisans
+```text
+https://USERNAME.github.io/vocab-story/
+```
 
-Bu proje için lisans belirtilmemiştir — dağıtmadan veya paylaşmadan önce bir lisans (ör. MIT) eklemeniz önerilir.
+is supported.
+
+After replacing an older VocabStory deployment, do one hard refresh (`Ctrl + Shift + R`). The V4 service worker is network-first and updates its cache as the new files are requested.
+
+## Gemini configuration
+
+Default preferred model is defined in:
+
+```js
+// js/config.js
+preferredModel: 'gemini-3.8-flash'
+```
+
+The app includes retry/fallback behavior in `js/services/gemini.js`.
+
+You can configure either:
+
+1. A Gemini API key in **Settings → AI**, or
+2. A backend proxy endpoint.
+
+### Security note
+
+A Gemini API key used directly from a static GitHub Pages site is visible to the browser user in DevTools / Network. For a public production deployment, use the proxy option and keep the provider API key on the server.
+
+## Legacy migration
+
+On the first V4 launch, the app can migrate these old V3 browser values:
+
+- `vocab_pool`
+- `gemini_api_key`
+- `gemini_model`
+- `vocabstory_activity`
+
+V4 itself stores its application state under:
+
+```text
+vocabstory_v4_state
+```
+
+## Next suggested milestones
+
+- Public-domain book catalog stored as separate JSON files
+- Streaming audiobook word highlighting
+- Per-user cloud accounts and sync
+- Proper server-side Gemini proxy
+- AI tutor for selected sentences and grammar questions
+- Rich SRS scheduling / learning history
+- Book search, tags and downloadable offline packs

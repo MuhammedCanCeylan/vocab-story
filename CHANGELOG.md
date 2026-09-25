@@ -1,6 +1,19 @@
 # Changelog
 
-## 4.2.0 — 2026-09-25
+## 4.2.1 - 2026-09-25
+
+### Fixed
+- Fixed legacy JSON vocabulary backups showing “imported” while leaving the V4 vocabulary count at zero.
+- Added compatibility for V1/V2/V3 plain-array backups and wrapped legacy vocabulary formats.
+- Added Safari-friendly `File.text()` loading with `FileReader` fallback.
+- Empty/unsupported JSON no longer reports a false successful import.
+
+### Improved
+- Legacy imports now normalize meanings, IPA, examples, statuses, and SRS defaults into the V4 schema.
+- Legacy vocabulary is merged into the current library, preserving V4 settings, reading history, progress, and other app data.
+- Import notifications now show added, updated, and total vocabulary counts.
+
+## 4.2.1 — 2026-09-25
 
 ### Reader vocabulary clarity
 - Reader text no longer visually marks every clickable word.

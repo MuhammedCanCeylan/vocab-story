@@ -1,4 +1,4 @@
-const CACHE='vocabstory-v4-2-0-shell-v1';
+const CACHE='vocabstory-v4-2-1-shell-v1';
 const SHELL=[
   './','./index.html','./favicon.svg','./manifest.webmanifest',
   './css/tokens.css','./css/app.css','./css/reader.css','./css/responsive.css',

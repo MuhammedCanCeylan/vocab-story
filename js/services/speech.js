@@ -1,4 +1,4 @@
-import { generateAudioJson, extractGeminiJson } from './gemini.js?v=4.2.0';
+import { generateAudioJson, extractGeminiJson } from './gemini.js?v=4.2.1';
 
 let voices = [];
 let recognition = null;

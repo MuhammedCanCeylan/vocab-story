@@ -1,12 +1,12 @@
-import { BOOKS } from '../data/books.js?v=4.2.0';
-import { getState, updateState, registerActivity } from '../services/storage.js?v=4.2.0';
-import { normalizeKey, ensureVocab, setWordStatus } from '../services/srs.js?v=4.2.0';
-import { speak, stopSpeaking } from '../services/speech.js?v=4.2.0';
-import { icon } from '../ui/icons.js?v=4.2.0';
-import { openWordModal } from '../ui/wordModal.js?v=4.2.0';
-import { toast } from '../ui/toast.js?v=4.2.0';
-import { generateJson, extractGeminiJson } from '../services/gemini.js?v=4.2.0';
-import { getCachedWord, lookupWord, lookupWordsBatch } from '../services/dictionary.js?v=4.2.0';
+import { BOOKS } from '../data/books.js?v=4.2.1';
+import { getState, updateState, registerActivity } from '../services/storage.js?v=4.2.1';
+import { normalizeKey, ensureVocab, setWordStatus } from '../services/srs.js?v=4.2.1';
+import { speak, stopSpeaking } from '../services/speech.js?v=4.2.1';
+import { icon } from '../ui/icons.js?v=4.2.1';
+import { openWordModal } from '../ui/wordModal.js?v=4.2.1';
+import { toast } from '../ui/toast.js?v=4.2.1';
+import { generateJson, extractGeminiJson } from '../services/gemini.js?v=4.2.1';
+import { getCachedWord, lookupWord, lookupWordsBatch } from '../services/dictionary.js?v=4.2.1';
 
 export function renderRead(container, routeParts=[]) {
   const bookId=routeParts[0];

@@ -1,5 +1,5 @@
-import { APP_CONFIG } from '../config.js?v=4.2.0';
-import { getState, updateState, registerActivity } from './storage.js?v=4.2.0';
+import { APP_CONFIG } from '../config.js?v=4.2.1';
+import { getState, updateState, registerActivity } from './storage.js?v=4.2.1';
 
 export function normalizeKey(value) {
   return String(value || '').normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase().replace(/[’]/g,"'").replace(/[^a-z'\-\s]/g,' ').replace(/\s+/g,' ').trim();

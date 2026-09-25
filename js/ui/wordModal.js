@@ -1,8 +1,8 @@
-import { icon } from './icons.js?v=4.2.0';
-import { speak } from '../services/speech.js?v=4.2.0';
-import { ensureVocab, normalizeKey, setWordStatus } from '../services/srs.js?v=4.2.0';
-import { getState } from '../services/storage.js?v=4.2.0';
-import { toast } from './toast.js?v=4.2.0';
+import { icon } from './icons.js?v=4.2.1';
+import { speak } from '../services/speech.js?v=4.2.1';
+import { ensureVocab, normalizeKey, setWordStatus } from '../services/srs.js?v=4.2.1';
+import { getState } from '../services/storage.js?v=4.2.1';
+import { toast } from './toast.js?v=4.2.1';
 
 let activeEntry = null;
 

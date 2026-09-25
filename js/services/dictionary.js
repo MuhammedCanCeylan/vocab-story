@@ -1,7 +1,7 @@
-import { getState, updateState } from './storage.js?v=4.2.0';
-import { normalizeKey } from './srs.js?v=4.2.0';
-import { generateJson, extractGeminiJson } from './gemini.js?v=4.2.0';
-import { coreDictionaryEntry } from '../data/coreDictionary.js?v=4.2.0';
+import { getState, updateState } from './storage.js?v=4.2.1';
+import { normalizeKey } from './srs.js?v=4.2.1';
+import { generateJson, extractGeminiJson } from './gemini.js?v=4.2.1';
+import { coreDictionaryEntry } from '../data/coreDictionary.js?v=4.2.1';
 
 function fromVocabulary(word) {
   const key=normalizeKey(word);

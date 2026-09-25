@@ -1,10 +1,10 @@
-import { APP_CONFIG } from './config.js?v=4.2.0';
-import { getState, updateState, exportState, importState, resetState } from './services/storage.js?v=4.2.0';
-import { initSpeech } from './services/speech.js?v=4.2.0';
-import { hydrateIcons, icon } from './ui/icons.js?v=4.2.0';
-import { closeWordModal } from './ui/wordModal.js?v=4.2.0';
-import { toast } from './ui/toast.js?v=4.2.0';
-import { initRouter, renderRoute } from './router.js?v=4.2.0';
+import { APP_CONFIG } from './config.js?v=4.2.1';
+import { getState, updateState, exportState, importState, resetState } from './services/storage.js?v=4.2.1';
+import { initSpeech } from './services/speech.js?v=4.2.1';
+import { hydrateIcons, icon } from './ui/icons.js?v=4.2.1';
+import { closeWordModal } from './ui/wordModal.js?v=4.2.1';
+import { toast } from './ui/toast.js?v=4.2.1';
+import { initRouter, renderRoute } from './router.js?v=4.2.1';
 
 function migrateLegacyData() {
   if(localStorage.getItem('vocabstory_v4_legacy_migrated')==='1') return;
@@ -89,8 +89,37 @@ function initSettings() {
   document.getElementById('exportDataButton')?.addEventListener('click',()=>{
     const blob=new Blob([exportState()],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`vocabstory-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);toast('Yedek indirildi.');
   });
-  document.getElementById('importDataInput')?.addEventListener('change',e=>{
-    const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{importState(reader.result);toast('Yedek başarıyla yüklendi.');closeSettings();renderRoute();}catch{toast('Geçerli bir VocabStory yedeği değil.');}};reader.readAsText(file);e.target.value='';
+  document.getElementById('importDataInput')?.addEventListener('change', async e=>{
+    const input=e.target;
+    const file=input.files?.[0];
+    if(!file)return;
+    try{
+      let text='';
+      if(typeof file.text==='function'){
+        text=await file.text();
+      }else{
+        text=await new Promise((resolve,reject)=>{
+          const reader=new FileReader();
+          reader.onload=()=>resolve(String(reader.result||''));
+          reader.onerror=()=>reject(reader.error||new Error('Dosya okunamadı'));
+          reader.readAsText(file,'utf-8');
+        });
+      }
+      const result=importState(text);
+      if(!result || !Number.isFinite(result.totalWords)) throw new Error('Import sonucu doğrulanamadı');
+      if(result.mode==='legacy-vocabulary'){
+        toast(`${result.addedWords} yeni kelime eklendi${result.updatedWords?` · ${result.updatedWords} kayıt güncellendi`:''}. Toplam ${result.totalWords} kelime.`);
+      }else{
+        toast(`Yedek yüklendi · ${result.totalWords} kelime.`);
+      }
+      closeSettings();
+      renderRoute();
+    }catch(error){
+      console.error('[VocabStory import error]',error);
+      toast('JSON okunamadı veya desteklenen bir VocabStory yedeği değil.');
+    }finally{
+      input.value='';
+    }
   });
   let resetArmed=false,resetTimer;
   document.getElementById('resetDataButton')?.addEventListener('click',e=>{
@@ -121,7 +150,7 @@ async function initPwa() {
     return;
   }
   try {
-    await navigator.serviceWorker.register('./service-worker.js?v=4.2.0', { updateViaCache: 'none' });
+    await navigator.serviceWorker.register('./service-worker.js?v=4.2.1', { updateViaCache: 'none' });
   } catch (e) {
     console.warn('Service worker registration failed', e);
   }

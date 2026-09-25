@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  version: '4.1.1',
+  version: '4.1.2',
   storageKey: 'vocabstory_v4_state',
   defaultLevel: 'A2',
   dailyGoal: 3,

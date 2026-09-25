@@ -1,12 +1,12 @@
-import { BOOKS } from '../data/books.js?v=4.1.1';
-import { getState, updateState, registerActivity } from '../services/storage.js?v=4.1.1';
-import { normalizeKey, ensureVocab, setWordStatus } from '../services/srs.js?v=4.1.1';
-import { speak, stopSpeaking } from '../services/speech.js?v=4.1.1';
-import { icon } from '../ui/icons.js?v=4.1.1';
-import { openWordModal } from '../ui/wordModal.js?v=4.1.1';
-import { toast } from '../ui/toast.js?v=4.1.1';
-import { generateJson, extractGeminiJson } from '../services/gemini.js?v=4.1.1';
-import { getCachedWord, lookupWord, lookupWordsBatch } from '../services/dictionary.js?v=4.1.1';
+import { BOOKS } from '../data/books.js?v=4.1.2';
+import { getState, updateState, registerActivity } from '../services/storage.js?v=4.1.2';
+import { normalizeKey, ensureVocab, setWordStatus } from '../services/srs.js?v=4.1.2';
+import { speak, stopSpeaking } from '../services/speech.js?v=4.1.2';
+import { icon } from '../ui/icons.js?v=4.1.2';
+import { openWordModal } from '../ui/wordModal.js?v=4.1.2';
+import { toast } from '../ui/toast.js?v=4.1.2';
+import { generateJson, extractGeminiJson } from '../services/gemini.js?v=4.1.2';
+import { getCachedWord, lookupWord, lookupWordsBatch } from '../services/dictionary.js?v=4.1.2';
 
 export function renderRead(container, routeParts=[]) {
   const bookId=routeParts[0];
@@ -253,8 +253,7 @@ async function handleChapterWordClick(event,chapter,book,container){
 
 async function copyChapterWords(inventory,chapter){
   const rows=inventory.map(word=>{const x=knownChapterEntry(word,chapter);return `${word}	${x?.meaningTr||''}	${x?.ipa||''}`;});
-  try{await navigator.clipboard.writeText(rows.join('
-'));toast(`${inventory.length} bölüm kelimesi panoya kopyalandı.`);}catch{toast('Tarayıcı panoya yazmaya izin vermedi.');}
+  try{await navigator.clipboard.writeText(rows.join('\n'));toast(`${inventory.length} bölüm kelimesi panoya kopyalandı.`);}catch{toast('Tarayıcı panoya yazmaya izin vermedi.');}
 }
 
 async function prepareAllMeanings(container,inventory,chapter,book){

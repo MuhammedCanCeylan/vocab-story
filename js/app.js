@@ -1,10 +1,10 @@
-import { APP_CONFIG } from './config.js?v=4.1.1';
-import { getState, updateState, exportState, importState, resetState } from './services/storage.js?v=4.1.1';
-import { initSpeech } from './services/speech.js?v=4.1.1';
-import { hydrateIcons, icon } from './ui/icons.js?v=4.1.1';
-import { closeWordModal } from './ui/wordModal.js?v=4.1.1';
-import { toast } from './ui/toast.js?v=4.1.1';
-import { initRouter, renderRoute } from './router.js?v=4.1.1';
+import { APP_CONFIG } from './config.js?v=4.1.2';
+import { getState, updateState, exportState, importState, resetState } from './services/storage.js?v=4.1.2';
+import { initSpeech } from './services/speech.js?v=4.1.2';
+import { hydrateIcons, icon } from './ui/icons.js?v=4.1.2';
+import { closeWordModal } from './ui/wordModal.js?v=4.1.2';
+import { toast } from './ui/toast.js?v=4.1.2';
+import { initRouter, renderRoute } from './router.js?v=4.1.2';
 
 function migrateLegacyData() {
   if(localStorage.getItem('vocabstory_v4_legacy_migrated')==='1') return;
@@ -121,7 +121,7 @@ async function initPwa() {
     return;
   }
   try {
-    await navigator.serviceWorker.register('./service-worker.js?v=4.1.1', { updateViaCache: 'none' });
+    await navigator.serviceWorker.register('./service-worker.js?v=4.1.2', { updateViaCache: 'none' });
   } catch (e) {
     console.warn('Service worker registration failed', e);
   }

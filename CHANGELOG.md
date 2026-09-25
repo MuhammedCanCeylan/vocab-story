@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.1.2 — 2026-09-25
+
+### Hotfix
+- Fixed a broken multiline string literal in `js/modules/read.js` inside the chapter-word copy action.
+- `rows.join('\n')` now uses an escaped newline instead of a literal line break inside single quotes.
+- Bumped all ES-module cache-busting query strings and the service-worker cache namespace to 4.1.2.
+- Validation now uses `node --input-type=module --check` for ES modules so this class of syntax error is caught before release.
+
 ## 4.1.0 — 2026-09-25
 
 ### Reader & dictionary

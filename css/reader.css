@@ -81,3 +81,48 @@
 .vocab-quiz-progress { float:right; margin-top:-35px; color:var(--muted); font-size:10px; font-weight:750; }
 .chapter-word-tools { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin:4px 0 12px; }
 .chapter-word-tools > * { min-height:40px; padding:0 10px; font-size:10px; }
+
+/* V4.2 reading vocabulary hierarchy */
+.reader-word { background:transparent; box-shadow:none; }
+.reader-word:hover { background:color-mix(in srgb,var(--accent) 8%,transparent); color:inherit; box-shadow:inset 0 -1px 0 color-mix(in srgb,var(--accent) 32%,transparent); }
+.reader-word.target.status-unsaved {
+  color:color-mix(in srgb,var(--accent) 88%,var(--text));
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+  box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--accent) 40%,transparent);
+}
+.reader-word.in-vocabulary.status-learning {
+  color:color-mix(in srgb,var(--accent-2) 86%,var(--text));
+  background:color-mix(in srgb,var(--accent-2) 10%,transparent);
+  box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--accent-2) 55%,transparent);
+}
+.reader-word.in-vocabulary.status-review {
+  color:color-mix(in srgb,var(--warning) 86%,var(--text));
+  background:color-mix(in srgb,var(--warning) 13%,transparent);
+  box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--warning) 58%,transparent);
+}
+.reader-word.in-vocabulary.status-mastered {
+  color:color-mix(in srgb,var(--success) 82%,var(--text));
+  background:color-mix(in srgb,var(--success) 9%,transparent);
+  box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--success) 48%,transparent);
+}
+.reader-legend { max-width:760px; margin:-18px auto 20px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; color:var(--muted); font-size:10px; }
+.reader-legend .legend-item { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border-radius:999px; border:1px solid var(--border); background:var(--surface-soft); }
+.reader-legend .legend-dot { width:8px; height:8px; border-radius:50%; }
+.reader-legend .target .legend-dot { background:var(--accent); }
+.reader-legend .learning .legend-dot { background:var(--accent-2); }
+.reader-legend .review .legend-dot { background:var(--warning); }
+.reader-legend .mastered .legend-dot { background:var(--success); }
+.sentence-translation { font-size:13px; }
+.reader-page.show-all-translations .sentence-translation { display:block; }
+.reader-context-card { margin-top:12px; padding:13px; border-radius:15px; border:1px solid var(--border); background:var(--surface-soft); }
+.reader-context-card strong { display:block; margin-bottom:7px; color:var(--muted); font-size:9px; text-transform:uppercase; letter-spacing:.08em; }
+.reader-context-card .context-en { margin:0; font-family:var(--font-reading); color:var(--text); line-height:1.55; }
+.reader-context-card .context-tr { margin:7px 0 0; color:var(--text-2); line-height:1.55; }
+.chapter-word-row .chapter-word-context { display:block; margin-top:3px; color:var(--muted); font-size:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chapter-word-browser .translation-coverage { margin:0 0 10px; }
+.translation-coverage .reader-progress-row { margin-bottom:6px; }
+.chapter-word-row.in-vocabulary { border-left-width:4px; }
+.chapter-word-row.status-learning.in-vocabulary { border-left-color:var(--accent-2); background:color-mix(in srgb,var(--accent-2) 7%,var(--surface-solid)); }
+.chapter-word-row.status-review.in-vocabulary { border-left-color:var(--warning); background:color-mix(in srgb,var(--warning) 8%,var(--surface-solid)); }
+.chapter-word-row.status-mastered.in-vocabulary { border-left-color:var(--success); background:color-mix(in srgb,var(--success) 8%,var(--surface-solid)); }
+.chapter-word-actions-note { margin:7px 0 0; font-size:9px; color:var(--muted); }

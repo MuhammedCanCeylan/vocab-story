@@ -1,8 +1,8 @@
-import { APP_CONFIG } from '../config.js?v=4.1.2';
-import { getState, updateState, registerActivity } from './storage.js?v=4.1.2';
+import { APP_CONFIG } from '../config.js?v=4.2.0';
+import { getState, updateState, registerActivity } from './storage.js?v=4.2.0';
 
 export function normalizeKey(value) {
-  return String(value || '').toLowerCase().replace(/[’]/g,"'").replace(/[^a-z'\-\s]/g,' ').replace(/\s+/g,' ').trim();
+  return String(value || '').normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase().replace(/[’]/g,"'").replace(/[^a-z'\-\s]/g,' ').replace(/\s+/g,' ').trim();
 }
 
 export function ensureVocab(entry) {

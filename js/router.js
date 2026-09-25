@@ -1,9 +1,9 @@
-import { renderHome } from './modules/home.js?v=4.1.2';
-import { renderRead } from './modules/read.js?v=4.1.2';
-import { renderSpeak } from './modules/speak.js?v=4.1.2';
-import { renderVocabulary } from './modules/vocabulary.js?v=4.1.2';
-import { renderProgress } from './modules/progress.js?v=4.1.2';
-import { hydrateIcons } from './ui/icons.js?v=4.1.2';
+import { renderHome } from './modules/home.js?v=4.2.0';
+import { renderRead } from './modules/read.js?v=4.2.0';
+import { renderSpeak } from './modules/speak.js?v=4.2.0';
+import { renderVocabulary } from './modules/vocabulary.js?v=4.2.0';
+import { renderProgress } from './modules/progress.js?v=4.2.0';
+import { hydrateIcons } from './ui/icons.js?v=4.2.0';
 
 export function getRoute() {
   const raw=(location.hash||'#/home').replace(/^#\/?/,'');

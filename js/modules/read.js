@@ -1,12 +1,12 @@
-import { BOOKS } from '../data/books.js?v=4.1.2';
-import { getState, updateState, registerActivity } from '../services/storage.js?v=4.1.2';
-import { normalizeKey, ensureVocab, setWordStatus } from '../services/srs.js?v=4.1.2';
-import { speak, stopSpeaking } from '../services/speech.js?v=4.1.2';
-import { icon } from '../ui/icons.js?v=4.1.2';
-import { openWordModal } from '../ui/wordModal.js?v=4.1.2';
-import { toast } from '../ui/toast.js?v=4.1.2';
-import { generateJson, extractGeminiJson } from '../services/gemini.js?v=4.1.2';
-import { getCachedWord, lookupWord, lookupWordsBatch } from '../services/dictionary.js?v=4.1.2';
+import { BOOKS } from '../data/books.js?v=4.2.0';
+import { getState, updateState, registerActivity } from '../services/storage.js?v=4.2.0';
+import { normalizeKey, ensureVocab, setWordStatus } from '../services/srs.js?v=4.2.0';
+import { speak, stopSpeaking } from '../services/speech.js?v=4.2.0';
+import { icon } from '../ui/icons.js?v=4.2.0';
+import { openWordModal } from '../ui/wordModal.js?v=4.2.0';
+import { toast } from '../ui/toast.js?v=4.2.0';
+import { generateJson, extractGeminiJson } from '../services/gemini.js?v=4.2.0';
+import { getCachedWord, lookupWord, lookupWordsBatch } from '../services/dictionary.js?v=4.2.0';
 
 export function renderRead(container, routeParts=[]) {
   const bookId=routeParts[0];
@@ -87,7 +87,7 @@ function renderReader(container,bookId,chapterIndex) {
   const state=getState();
   const focus=state.settings.readerMode==='focus';
   updateState(s=>{s.reading.currentBookId=book.id;s.reading.currentChapter=safeIndex;});
-  const words=chapter.sentences.map(s=>s.text).join(' ').match(/[A-Za-z]+(?:['’][A-Za-z]+)?/g)?.length||0;
+  const words=chapter.sentences.map(s=>s.text).join(' ').match(/[A-Za-zÀ-ÖØ-öø-ÿ]+(?:['’][A-Za-zÀ-ÖØ-öø-ÿ]+)?/g)?.length||0;
   const completed=!!getState().reading.completedChapters[`${book.id}:${safeIndex}`];
   const savedKeys=new Set(state.vocabulary.map(v=>normalizeKey(v.word)));
   const coverage=chapter.vocabulary.length?Math.round(chapter.vocabulary.filter(v=>savedKeys.has(normalizeKey(v.word))).length/chapter.vocabulary.length*100):0;
@@ -96,12 +96,13 @@ function renderReader(container,bookId,chapterIndex) {
   container.innerHTML=`<section class="page ${focus?'reader-focus-mode':''}" id="readerPage">
     <div class="reader-toolbar">
       <div class="left"><a class="mini-button" href="#/read" aria-label="Kitaplığa dön">${icon('arrow-left')}</a><span class="badge">${book.level}</span><span class="pill">${safeIndex+1}/${book.chapters.length}</span></div>
-      <div class="right"><button class="mini-button" id="playChapterButton" type="button" title="Bölümü dinle">${icon('volume')}</button><button class="mini-button" id="readerModeButton" type="button" title="Focus/Learning görünümü">${icon(focus?'brain':'book-open')}</button></div>
+      <div class="right"><button class="mini-button" id="toggleAllTranslations" type="button" title="Tüm cümle çevirilerini göster/gizle">${icon('translate')}</button><button class="mini-button" id="playChapterButton" type="button" title="Bölümü dinle">${icon('volume')}</button><button class="mini-button" id="readerModeButton" type="button" title="Focus/Learning görünümü">${icon(focus?'brain':'book-open')}</button></div>
     </div>
     <div class="reader-shell">
       <article class="reader-page">
         <header class="reader-heading"><span class="book-kicker">${escapeHtml(book.title)} · Chapter ${safeIndex+1}</span><h1>${escapeHtml(chapter.title)}</h1><p>${escapeHtml(chapter.summary)}</p></header>
-        <section class="chapter-vocab"><div class="card-title"><div><h3>Bu bölümde karşılaşacağın ${chapter.vocabulary.length} hedef ifade</h3><p class="muted" style="margin:4px 0 0">Durum rengi doğrudan kelimenin çalışma statüsünü gösterir.</p></div><button class="ghost-button" id="addChapterTargetsReview" type="button">${icon('rotate')} Hepsini Review’a al</button></div><div class="chapter-vocab-list">${chapter.vocabulary.map((v,i)=>chapterVocabPill(v,i,state)).join('')}</div></section>
+        <section class="chapter-vocab"><div class="card-title"><div><h3>Bu bölümde karşılaşacağın ${chapter.vocabulary.length} hedef ifade</h3><p class="muted" style="margin:4px 0 0">Kelime havuzundaki ifadeler okuma metninde çalışma durumuna göre ayrıca vurgulanır.</p></div><button class="ghost-button" id="addChapterTargetsReview" type="button">${icon('rotate')} Hepsini Review’a al</button></div><div class="chapter-vocab-list">${chapter.vocabulary.map((v,i)=>chapterVocabPill(v,i,state)).join('')}</div></section>
+        <div class="reader-legend"><span>Metin işaretleri:</span><span class="legend-item target"><span class="legend-dot"></span>Hedef ifade</span><span class="legend-item learning"><span class="legend-dot"></span>Öğreniliyor</span><span class="legend-item review"><span class="legend-dot"></span>Tekrar</span><span class="legend-item mastered"><span class="legend-dot"></span>Öğrenildi</span><span>Diğer kelimeler düz görünür ama tamamı tıklanabilir.</span></div>
         <div class="reading-content" id="readingContent">${chapter.sentences.map((s,i)=>sentenceHtml(s,i,chapter.vocabulary)).join('')}</div>
         <section class="quiz-block" id="chapterQuiz"><span class="eyebrow">Comprehension</span><h3>Bölümü anladın mı?</h3><p class="muted">Önce hikâyenin anlamını kontrol et.</p>${chapter.quiz.map((q,qi)=>quizHtml(q,qi)).join('')}</section>
         <section class="quiz-block vocab-lab" id="vocabQuiz"><span class="eyebrow">Vocabulary lab</span><h3>Kelimeyi gerçekten hatırlıyor musun?</h3><p class="muted">Türkçe anlam, İngilizce tanım ve cümle boşluğu olmak üzere farklı soru türleri.</p>${practiceQuizHtml(chapter)}</section>
@@ -112,19 +113,20 @@ function renderReader(container,bookId,chapterIndex) {
       <aside class="reader-side">
         <section class="card learning-panel" id="learningPanel"><span class="eyebrow">Learning panel</span><h3>Bir kelime seç</h3><p class="muted">Okurken bir kelime veya kalıba dokun. İngilizce açıklaması önce burada görünür; Türkçe anlam ve ayrıntılar ikinci adımda açılır.</p></section>
         <section class="card reader-progress"><div class="reader-progress-row"><span>Kitap ilerlemesi</span><strong>${book.chapters.filter((_,i)=>getState().reading.completedChapters[`${book.id}:${i}`]).length}/${book.chapters.length}</strong></div><div class="progress-track"><span style="width:${Math.round(book.chapters.filter((_,i)=>getState().reading.completedChapters[`${book.id}:${i}`]).length/book.chapters.length*100)}%"></span></div><div class="reader-progress-row" style="margin-top:15px"><span>Bu bölüm</span><strong>${words} kelime</strong></div><div class="reader-progress-row" style="margin-top:15px"><span>Hedef kelime coverage</span><strong>${coverage}%</strong></div><div class="progress-track"><span style="width:${coverage}%"></span></div></section>
-        <section class="card chapter-word-browser" id="chapterWordBrowser"><div class="card-title"><div><span class="eyebrow">All words</span><h3 style="margin:3px 0 0">Bölümün tüm kelimeleri</h3></div><span class="pill">${inventory.length}</span></div><p class="muted">Her kelimeye ulaşabilirsin. Hazır anlamı olmayanlar AI ile bağlama göre tamamlanır ve saklanır.</p><div class="chapter-word-tools"><button class="secondary-button" id="prepareAllMeanings" type="button">${icon('translate')} Anlamları hazırla</button><button class="ghost-button" id="copyChapterWords" type="button">${icon('download')} Listeyi kopyala</button></div><input class="search-input" id="chapterWordSearch" placeholder="Bölümde kelime ara…"/><div class="chapter-word-list" id="chapterWordList">${chapterWordListHtml(inventory,chapter)}</div></section>
+        <section class="card chapter-word-browser" id="chapterWordBrowser"><div class="card-title"><div><span class="eyebrow">All words</span><h3 style="margin:3px 0 0">Bölümün tüm kelimeleri</h3></div><span class="pill">${inventory.length}</span></div><p class="muted">Hikâyedeki her kelimenin Türkçe anlamına ve geçtiği cümlenin çevirisine buradan ulaşabilirsin.</p>${translationCoverageHtml(inventory,chapter)}<div class="chapter-word-tools"><button class="secondary-button" id="prepareAllMeanings" type="button">${icon('translate')} Türkçe sözlüğü tamamla</button><button class="ghost-button" id="copyChapterWords" type="button">${icon('download')} Listeyi kopyala</button></div><p class="chapter-word-actions-note">Temel kelimeler yerel sözlükten gelir; eksik bağlamsal anlamlar tek tek istek yerine bölüm halinde hazırlanıp cache’lenir.</p><input class="search-input" id="chapterWordSearch" placeholder="Bölümde kelime ara…"/><div class="chapter-word-list" id="chapterWordList">${chapterWordListHtml(inventory,chapter)}</div></section>
         ${chapter.grammar?`<section class="card"><span class="eyebrow">Grammar discovery</span><h3 style="margin:0 0 8px">${escapeHtml(chapter.grammar.title)}</h3><p class="muted" style="line-height:1.6">${escapeHtml(chapter.grammar.note)}</p><div class="word-example"><p>${escapeHtml(chapter.grammar.example)}</p></div></section>`:''}
       </aside>
     </div>
   </section>`;
 
   const page=container.querySelector('#readerPage');
+  container.querySelector('#toggleAllTranslations')?.addEventListener('click',()=>{page.classList.toggle('show-all-translations');});
   container.querySelector('#playChapterButton')?.addEventListener('click',()=>speak(chapter.sentences.map(s=>s.text).join(' '),.84));
   container.querySelector('#readerModeButton')?.addEventListener('click',()=>{
     const nowFocus=!page.classList.contains('reader-focus-mode'); page.classList.toggle('reader-focus-mode',nowFocus);
     updateState(s=>{s.settings.readerMode=nowFocus?'focus':'learning';});
   });
-  container.querySelectorAll('.chapter-vocab-list [data-vocab-index]').forEach(btn=>btn.addEventListener('click',()=>selectEntry({...chapter.vocabulary[Number(btn.dataset.vocabIndex)],source:`${book.title} — ${chapter.title}`},container,true)));
+  container.querySelectorAll('.chapter-vocab-list [data-vocab-index]').forEach(btn=>btn.addEventListener('click',()=>{const entry=chapter.vocabulary[Number(btn.dataset.vocabIndex)];resolveReaderEntry(entry.word,chapter,book,container,{openModal:true,sentenceContext:sentenceContextForWord(entry.word,chapter)});}));
   container.querySelector('#readingContent')?.addEventListener('click',e=>handleReadingClick(e,chapter,container,book));
   container.querySelector('#chapterWordList')?.addEventListener('click',e=>handleChapterWordClick(e,chapter,book,container));
   container.querySelector('#chapterWordSearch')?.addEventListener('input',e=>renderChapterWordFilter(container,inventory,chapter,e.target.value));
@@ -135,6 +137,7 @@ function renderReader(container,bookId,chapterIndex) {
   container.querySelector('#vocabQuiz')?.addEventListener('click',e=>handlePracticeQuizClick(e,chapter));
   container.querySelector('#retellFeedbackButton')?.addEventListener('click',()=>evaluateRetelling(book,chapter,container));
   container.querySelector('#completeChapterButton')?.addEventListener('click',()=>completeChapter(book,safeIndex,words,container));
+  scheduleAutoPrepareMeanings(container,inventory,chapter,book);
   window.addEventListener('hashchange',stopSpeaking,{once:true});
 }
 
@@ -145,15 +148,18 @@ function sentenceHtml(sentence,index,vocab) {
 function interactiveText(text,vocab) {
   const map=new Map(vocab.map((v,i)=>[normalizeKey(v.word),i]));
   const phrases=[...map.keys()].filter(k=>k.includes(' ')).sort((a,b)=>b.length-a.length).map(escapeRegExp);
-  const wordPattern="[A-Za-z]+(?:['’][A-Za-z]+)?";
+  const wordPattern="[A-Za-zÀ-ÖØ-öø-ÿ]+(?:['’][A-Za-zÀ-ÖØ-öø-ÿ]+)?";
   const pattern=phrases.length?`${phrases.join('|')}|${wordPattern}`:wordPattern;
   const re=new RegExp(`\\b(?:${pattern})\\b`,'gi');
+  const state=getState();
+  const savedMap=new Map(state.vocabulary.map(v=>[normalizeKey(v.word),v]));
   let out='',cursor=0,m;
   while((m=re.exec(text))){
     out+=escapeHtml(text.slice(cursor,m.index));
-    const visible=m[0],key=normalizeKey(visible),idx=map.get(key);
-    const status=statusClassForWord(visible,getState());
-    out+=`<span class="reader-word ${idx!==undefined?'target':''} ${status}" data-reader-word="${encodeURIComponent(visible)}" data-word-key="${encodeURIComponent(key)}" ${idx!==undefined?`data-vocab-index="${idx}"`:''}>${escapeHtml(visible)}</span>`;
+    const visible=m[0],key=normalizeKey(visible),idx=map.get(key),saved=savedMap.get(key);
+    const status=saved?`status-${saved.status||'learning'}`:'status-unsaved';
+    const classes=['reader-word',idx!==undefined?'target':'',saved?'in-vocabulary':'',status].filter(Boolean).join(' ');
+    out+=`<span class="${classes}" data-reader-word="${encodeURIComponent(visible)}" data-word-key="${encodeURIComponent(key)}" ${idx!==undefined?`data-vocab-index="${idx}"`:''}>${escapeHtml(visible)}</span>`;
     cursor=m.index+visible.length;
   }
   return out+escapeHtml(text.slice(cursor));
@@ -162,7 +168,7 @@ function interactiveText(text,vocab) {
 function chapterWordInventory(chapter){
   const seen=new Map();
   for(const sentence of chapter.sentences||[]){
-    const words=String(sentence.text||'').match(/[A-Za-z]+(?:['’][A-Za-z]+)?/g)||[];
+    const words=String(sentence.text||'').match(/[A-Za-zÀ-ÖØ-öø-ÿ]+(?:['’][A-Za-zÀ-ÖØ-öø-ÿ]+)?/g)||[];
     for(const word of words){const key=normalizeKey(word);if(key&&!seen.has(key))seen.set(key,word);}
   }
   return [...seen.values()].sort((a,b)=>a.localeCompare(b,'en'));
@@ -191,12 +197,43 @@ function knownChapterEntry(word,chapter){
   return findChapterTarget(word,chapter)||getCachedWord(word)||null;
 }
 
+function sentenceContextForWord(word,chapter){
+  const key=normalizeKey(word);
+  if(!key)return {text:'',tr:'',index:-1};
+  const escaped=escapeRegExp(key).replace(/\s+/g,'\\s+');
+  const re=new RegExp(`\\b${escaped}\\b`,'i');
+  const index=(chapter.sentences||[]).findIndex(s=>re.test(normalizeKey(s.text)));
+  const sentence=index>=0?chapter.sentences[index]:chapter.sentences?.[0];
+  return {text:sentence?.text||'',tr:sentence?.tr||'',index:index>=0?index:0};
+}
+
+function chapterWordContexts(inventory,chapter){
+  const result={};
+  for(const word of inventory)result[normalizeKey(word)]=sentenceContextForWord(word,chapter);
+  return result;
+}
+
 function chapterWordListHtml(inventory,chapter){
+  const state=getState();
+  const savedKeys=new Set(state.vocabulary.map(v=>normalizeKey(v.word)));
   return inventory.map(word=>{
     const known=knownChapterEntry(word,chapter);
-    const status=statusClassForWord(word);
-    return `<button class="chapter-word-row ${status}" type="button" data-chapter-word="${encodeURIComponent(word)}" data-word-key="${encodeURIComponent(normalizeKey(word))}"><span class="chapter-word-main"><strong>${escapeHtml(word)}</strong><small>${escapeHtml(known?.meaningTr||'Türkçe anlamı getir')}</small></span>${known?.ipa?`<span class="chapter-word-ipa">${escapeHtml(known.ipa)}</span>`:''}</button>`;
+    const context=sentenceContextForWord(word,chapter);
+    const status=statusClassForWord(word,state);
+    const saved=savedKeys.has(normalizeKey(word));
+    return `<button class="chapter-word-row ${status} ${saved?'in-vocabulary':''}" type="button" data-chapter-word="${encodeURIComponent(word)}" data-word-key="${encodeURIComponent(normalizeKey(word))}"><span class="chapter-word-main"><strong>${escapeHtml(word)}</strong><small>${escapeHtml(known?.meaningTr||'Türkçe anlam hazırlanıyor…')}</small><span class="chapter-word-context">${escapeHtml(context.tr||'Cümle çevirisi hazır')}</span></span>${known?.ipa?`<span class="chapter-word-ipa">${escapeHtml(known.ipa)}</span>`:''}</button>`;
   }).join('');
+}
+
+function translationCoverageHtml(inventory,chapter){
+  const ready=inventory.filter(word=>knownChapterEntry(word,chapter)?.meaningTr).length;
+  const pct=inventory.length?Math.round(ready/inventory.length*100):100;
+  return `<div class="translation-coverage" id="translationCoverage"><div class="reader-progress-row"><span>Türkçe sözlük kapsamı</span><strong>${ready}/${inventory.length} · %${pct}</strong></div><div class="progress-track"><span style="width:${pct}%"></span></div></div>`;
+}
+
+function updateTranslationCoverage(container,inventory,chapter){
+  const current=container.querySelector('#translationCoverage');
+  if(current)current.outerHTML=translationCoverageHtml(inventory,chapter);
 }
 
 function renderChapterWordFilter(container,inventory,chapter,query=''){
@@ -204,25 +241,25 @@ function renderChapterWordFilter(container,inventory,chapter,query=''){
   const filtered=q?inventory.filter(w=>w.toLowerCase().includes(q)):inventory;
   const list=container.querySelector('#chapterWordList');
   if(list)list.innerHTML=chapterWordListHtml(filtered,chapter)||`<p class="muted">Kelime bulunamadı.</p>`;
+  updateTranslationCoverage(container,inventory,chapter);
 }
 
-function findSentenceContext(word,chapter){
-  const key=normalizeKey(word);
-  return (chapter.sentences||[]).find(s=>String(s.text||'').toLowerCase().includes(key))?.text || chapter.sentences?.[0]?.text || '';
-}
 
-async function resolveReaderEntry(word,chapter,book,container,{openModal=false}={}){
+async function resolveReaderEntry(word,chapter,book,container,{openModal=false,sentenceContext=null}={}){
+  const context=sentenceContext||sentenceContextForWord(word,chapter);
   const target=findChapterTarget(word,chapter);
   const cached=target||getCachedWord(word);
-  if(cached?.meaningTr||cached?.definitionEn){selectEntry({...cached,source:`${book.title} — ${chapter.title}`},container,openModal);return cached;}
-  const loading={word,ipa:'',definitionEn:'Anlam ve açıklama hazırlanıyor…',meaningTr:'',example:findSentenceContext(word,chapter),type:'word',level:book.level,source:`${book.title} — ${chapter.title}`};
+  const enrich=entry=>({...entry,source:`${book.title} — ${chapter.title}`,contextSentence:context.text,contextSentenceTr:context.tr});
+  if(cached?.meaningTr||cached?.definitionEn){const ready=enrich(cached);selectEntry(ready,container,openModal);return ready;}
+  const loading=enrich({word,ipa:'',definitionEn:'Anlam ve açıklama hazırlanıyor…',meaningTr:'',example:context.text,type:'word',level:book.level});
   selectEntry(loading,container,false);
   try{
-    const entry=await lookupWord(word,{context:findSentenceContext(word,chapter),level:book.level});
-    selectEntry({...entry,source:`${book.title} — ${chapter.title}`},container,openModal);
+    const entry=await lookupWord(word,{context:context.text,level:book.level});
+    const ready=enrich(entry);
+    selectEntry(ready,container,openModal);
     const inventory=chapterWordInventory(chapter);
     renderChapterWordFilter(container,inventory,chapter,container.querySelector('#chapterWordSearch')?.value||'');
-    return entry;
+    return ready;
   }catch(err){
     console.error(err);
     if(err.status===401)toast('Bu kelimenin Türkçe anlamını getirmek için AI ayarlarında Gemini API anahtarı veya proxy gerekli.');
@@ -240,20 +277,21 @@ async function handleReadingClick(event,chapter,container,book) {
   const word=event.target.closest('[data-reader-word]'); if(!word)return;
   const visible=decodeURIComponent(word.dataset.readerWord);
   const entryIndex=word.dataset.vocabIndex;
-  if(entryIndex!==undefined){selectEntry({...chapter.vocabulary[Number(entryIndex)],source:`${book.title} — ${chapter.title}`},container,window.innerWidth<900);return;}
-  await resolveReaderEntry(visible,chapter,book,container,{openModal:window.innerWidth<900});
+  const context={text:sentence.text,tr:sentence.tr,index};
+  if(entryIndex!==undefined){selectEntry({...chapter.vocabulary[Number(entryIndex)],source:`${book.title} — ${chapter.title}`,contextSentence:sentence.text,contextSentenceTr:sentence.tr},container,window.innerWidth<900);return;}
+  await resolveReaderEntry(visible,chapter,book,container,{openModal:window.innerWidth<900,sentenceContext:context});
 }
 
 async function handleChapterWordClick(event,chapter,book,container){
   const row=event.target.closest('[data-chapter-word]');if(!row)return;
   const word=decodeURIComponent(row.dataset.chapterWord);
-  await resolveReaderEntry(word,chapter,book,container,{openModal:window.innerWidth<900});
+  await resolveReaderEntry(word,chapter,book,container,{openModal:window.innerWidth<900,sentenceContext:sentenceContextForWord(word,chapter)});
 }
 
 
 async function copyChapterWords(inventory,chapter){
-  const rows=inventory.map(word=>{const x=knownChapterEntry(word,chapter);return `${word}	${x?.meaningTr||''}	${x?.ipa||''}`;});
-  try{await navigator.clipboard.writeText(rows.join('\n'));toast(`${inventory.length} bölüm kelimesi panoya kopyalandı.`);}catch{toast('Tarayıcı panoya yazmaya izin vermedi.');}
+  const rows=inventory.map(word=>{const x=knownChapterEntry(word,chapter);const c=sentenceContextForWord(word,chapter);return `${word}	${x?.meaningTr||''}	${x?.ipa||''}	${c.text}	${c.tr}`;});
+  try{await navigator.clipboard.writeText(['WORD\tTÜRKÇE\tIPA\tCONTEXT\tCÜMLE ÇEVİRİSİ',...rows].join('\n'));toast(`${inventory.length} bölüm kelimesi, bağlam cümleleriyle panoya kopyalandı.`);}catch{toast('Tarayıcı panoya yazmaya izin vermedi.');}
 }
 
 async function prepareAllMeanings(container,inventory,chapter,book){
@@ -262,12 +300,30 @@ async function prepareAllMeanings(container,inventory,chapter,book){
   try{
     const unknown=inventory.filter(word=>{const x=knownChapterEntry(word,chapter);return !(x?.meaningTr&&x?.definitionEn);});
     if(!unknown.length){toast('Bu bölümdeki tüm kelimelerin anlamları zaten hazır.');return;}
-    await lookupWordsBatch(unknown,{context:chapter.sentences.map(s=>s.text).join(' '),level:book.level,onAttempt:({model,attempt,batch,totalBatches})=>{button.textContent=attempt>1?`${model} tekrar…`:`${model} · ${batch||1}/${totalBatches||1} hazırlanıyor…`;}});
+    await lookupWordsBatch(unknown,{context:chapter.sentences.map(s=>s.text).join(' '),contexts:chapterWordContexts(inventory,chapter),level:book.level,onAttempt:({model,attempt,batch,totalBatches})=>{button.textContent=attempt>1?`${model} tekrar…`:`${model} · ${batch||1}/${totalBatches||1} hazırlanıyor…`;}});
     renderChapterWordFilter(container,inventory,chapter,container.querySelector('#chapterWordSearch')?.value||'');
     toast('Bölümdeki kelimelerin Türkçe anlamları hazırlandı ve cache’lendi.');
   }catch(err){console.error(err);toast(err.status===401?'Tüm kelimeleri çevirmek için AI ayarlarında Gemini API anahtarı veya proxy gerekli.':'Kelime listesi şu anda tamamlanamadı.');}
-  finally{button.disabled=false;button.innerHTML=`${icon('translate')} Türkçe anlamları hazırla`;}
+  finally{button.disabled=false;button.innerHTML=`${icon('translate')} Türkçe sözlüğü tamamla`;updateTranslationCoverage(container,inventory,chapter);}
 }
+
+function scheduleAutoPrepareMeanings(container,inventory,chapter,book){
+  const state=getState();
+  if(!state.settings.apiKey&&!state.settings.proxyEndpoint)return;
+  const unknown=inventory.filter(word=>!knownChapterEntry(word,chapter)?.meaningTr);
+  if(!unknown.length)return;
+  window.setTimeout(async()=>{
+    if(!document.body.contains(container))return;
+    try{
+      await lookupWordsBatch(unknown,{context:chapter.sentences.map(s=>s.text).join(' '),contexts:chapterWordContexts(inventory,chapter),level:book.level});
+      if(!document.body.contains(container))return;
+      renderChapterWordFilter(container,inventory,chapter,container.querySelector('#chapterWordSearch')?.value||'');
+    }catch(err){
+      console.debug('[VocabStory] background dictionary preparation skipped',err?.status||err);
+    }
+  },700);
+}
+
 
 function addChapterTargetsToReview(chapter,container){
   for(const entry of chapter.vocabulary||[]){const item=ensureVocab({...entry,source:'chapter target'});if(item)setWordStatus(item.id,'review');}
@@ -282,6 +338,7 @@ function refreshAllWordStatusVisuals(container){
     const item=getState().vocabulary.find(v=>normalizeKey(v.word)===key);
     el.classList.remove('status-unsaved','status-learning','status-review','status-mastered');
     el.classList.add(`status-${item?.status||'unsaved'}`);
+    if(el.classList.contains('reader-word')||el.classList.contains('chapter-word-row'))el.classList.toggle('in-vocabulary',!!item);
   });
 }
 
@@ -289,7 +346,7 @@ function selectEntry(entry,container,openModal=false) {
   const panel=container.querySelector('#learningPanel');
   const saved=getState().vocabulary.find(v=>normalizeKey(v.word)===normalizeKey(entry.word));
   const status=saved?.status||'unsaved';
-  if(panel){panel.innerHTML=`<span class="eyebrow">${escapeHtml([entry.level,entry.type].filter(Boolean).join(' · ')||'Vocabulary')}</span><div class="selected-word">${escapeHtml(entry.word)}</div><div class="selected-ipa">${escapeHtml(entry.ipa||'IPA hazırlanmadı')}</div><div class="selected-definition">${escapeHtml(entry.definitionEn||'İngilizce açıklama henüz yok.')}</div><div class="selected-turkish"><strong>Türkçe</strong><span>${escapeHtml(entry.meaningTr||'Henüz hazırlanmadı.')}</span></div>${entry.example?`<div class="word-example"><p>${escapeHtml(entry.example)}</p></div>`:''}<div class="word-status-actions"><button class="word-status-btn learning ${status==='learning'?'active':''}" type="button" data-panel-status="learning">${icon('plus')} Öğrenilecek</button><button class="word-status-btn review ${status==='review'?'active':''}" type="button" data-panel-status="review">${icon('rotate')} Tekrar</button><button class="word-status-btn mastered ${status==='mastered'?'active':''}" type="button" data-panel-status="mastered">${icon('check')} Biliyorum</button></div><div class="word-modal-actions"><button class="secondary-button" type="button" id="panelListen">${icon('volume')} Dinle</button><button class="ghost-button" type="button" id="panelDetails">Ayrıntılar</button></div>`;
+  if(panel){panel.innerHTML=`<span class="eyebrow">${escapeHtml([entry.level,entry.type].filter(Boolean).join(' · ')||'Vocabulary')}</span><div class="selected-word">${escapeHtml(entry.word)}</div><div class="selected-ipa">${escapeHtml(entry.ipa||'IPA hazırlanmadı')}</div><div class="selected-definition">${escapeHtml(entry.definitionEn||'İngilizce açıklama henüz yok.')}</div><div class="selected-turkish"><strong>Türkçe</strong><span>${escapeHtml(entry.meaningTr||'Henüz hazırlanmadı.')}</span></div>${entry.contextSentence?`<div class="reader-context-card"><strong>Hikâyedeki cümle</strong><p class="context-en">${escapeHtml(entry.contextSentence)}</p><p class="context-tr">${escapeHtml(entry.contextSentenceTr||'Cümle çevirisi yok.')}</p></div>`:''}${entry.example&&entry.example!==entry.contextSentence?`<div class="word-example"><p>${escapeHtml(entry.example)}</p></div>`:''}<div class="word-status-actions"><button class="word-status-btn learning ${status==='learning'?'active':''}" type="button" data-panel-status="learning">${icon('plus')} Öğrenilecek</button><button class="word-status-btn review ${status==='review'?'active':''}" type="button" data-panel-status="review">${icon('rotate')} Tekrar</button><button class="word-status-btn mastered ${status==='mastered'?'active':''}" type="button" data-panel-status="mastered">${icon('check')} Biliyorum</button></div><div class="word-modal-actions"><button class="secondary-button" type="button" id="panelListen">${icon('volume')} Dinle</button><button class="ghost-button" type="button" id="panelDetails">Ayrıntılar</button></div>`;
     panel.querySelector('#panelListen')?.addEventListener('click',()=>speak(entry.word,.8));
     panel.querySelector('#panelDetails')?.addEventListener('click',()=>openWordModal(entry));
     panel.querySelector('.word-status-actions')?.addEventListener('click',e=>{const b=e.target.closest('[data-panel-status]');if(!b)return;const item=ensureVocab({...entry,source:entry.source||'reader'});if(item)setWordStatus(item.id,b.dataset.panelStatus);panel.querySelectorAll('[data-panel-status]').forEach(x=>x.classList.toggle('active',x===b));refreshAllWordStatusVisuals(container);toast(b.dataset.panelStatus==='mastered'?`“${entry.word}” öğrenildi olarak işaretlendi.`:b.dataset.panelStatus==='review'?`“${entry.word}” tekrar listesine alındı.`:`“${entry.word}” öğrenme listesine eklendi.`);});
@@ -337,6 +394,7 @@ function practiceQuestions(chapter){
   const vocab=(chapter.vocabulary||[]).filter(v=>v.word&&v.meaningTr);
   if(vocab.length<2)return [];
   const optionWords=(correct,index)=>[correct,...vocab.filter((_,i)=>i!==index).slice(0,3).map(v=>v.word)].slice(0,4);
+  const optionMeanings=(correct,index)=>[correct,...vocab.filter((_,i)=>i!==index).slice(0,3).map(v=>v.meaningTr)].slice(0,4);
   const shuffleWithAnswer=(arr,correct)=>{
     const copy=[...new Set(arr)];
     copy.sort((a,b)=>normalizeKey(a).localeCompare(normalizeKey(b)));
@@ -356,13 +414,27 @@ function practiceQuestions(chapter){
     x=shuffleWithAnswer(optionWords(third.word,Math.min(2,vocab.length-1)),third.word);
     questions.push({kind:'cloze',q:cloze,options:x.options,answer:x.answer,explanation:`Cümlede doğal ifade: ${third.word}`});
   }
+  if(vocab.length>=4){
+    const fourth=vocab[3];
+    x=shuffleWithAnswer(optionMeanings(fourth.meaningTr,3),fourth.meaningTr);
+    questions.push({kind:'reverse',q:`“${fourth.word}” bu hikâyede hangi anlama geliyor?`,options:x.options,answer:x.answer,explanation:`${fourth.word} → ${fourth.meaningTr}`});
+  }
+  if(vocab.length>=5){
+    const fifth=vocab[4];
+    const sentence=(chapter.sentences||[]).find(s=>new RegExp(`\\b${escapeRegExp(fifth.word)}\\b`,'i').test(s.text));
+    if(sentence){
+      const cloze=sentence.text.replace(new RegExp(`\\b${escapeRegExp(fifth.word)}\\b`,'i'),'_____');
+      x=shuffleWithAnswer(optionWords(fifth.word,4),fifth.word);
+      questions.push({kind:'context',q:`Context challenge: ${cloze}`,options:x.options,answer:x.answer,explanation:`Doğru bağlam ifadesi: ${fifth.word}`});
+    }
+  }
   return questions;
 }
 
 function practiceQuizHtml(chapter){
   const qs=practiceQuestions(chapter);
   if(!qs.length)return `<p class="muted">Bu bölüm için yeterli hedef kelime yok.</p>`;
-  return `<div class="vocab-quiz-progress" data-vocab-quiz-score>0 / ${qs.length}</div>${qs.map((q,i)=>`<div class="quiz-question practice-question" data-practice-question="${i}"><span class="quiz-kind">${q.kind==='cloze'?'Fill the gap':q.kind==='definition'?'Definition':'Meaning'}</span><p>${escapeHtml(q.q)}</p><div class="quiz-options">${q.options.map((opt,oi)=>`<button class="quiz-option" type="button" data-practice-option="${oi}">${escapeHtml(opt)}</button>`).join('')}</div><small class="muted quiz-explanation"></small></div>`).join('')}`;
+  return `<div class="vocab-quiz-progress" data-vocab-quiz-score>0 / ${qs.length}</div>${qs.map((q,i)=>`<div class="quiz-question practice-question" data-practice-question="${i}"><span class="quiz-kind">${q.kind==='cloze'||q.kind==='context'?'Fill the gap':q.kind==='definition'?'Definition':q.kind==='reverse'?'TR meaning':'Meaning'}</span><p>${escapeHtml(q.q)}</p><div class="quiz-options">${q.options.map((opt,oi)=>`<button class="quiz-option" type="button" data-practice-option="${oi}">${escapeHtml(opt)}</button>`).join('')}</div><small class="muted quiz-explanation"></small></div>`).join('')}`;
 }
 
 function handlePracticeQuizClick(event,chapter){
@@ -373,8 +445,9 @@ function handlePracticeQuizClick(event,chapter){
   wrap.querySelectorAll('[data-practice-option]').forEach((b,i)=>{if(i===q.answer)b.classList.add('correct');else if(i===oi)b.classList.add('wrong');});
   wrap.querySelector('.quiz-explanation').textContent=q.explanation;
   updateState(s=>{s.quiz.total++;if(oi===q.answer)s.quiz.correct++;});
-  const block=wrap.closest('#vocabQuiz');const answered=[...block.querySelectorAll('[data-practice-question]')].filter(x=>x.dataset.answered==='1');const correct=answered.filter(x=>x.querySelector('.quiz-option.correct')?.classList.contains('wrong')===false && !x.querySelector('.quiz-option.wrong')).length;
-  const score=block.querySelector('[data-vocab-quiz-score]');if(score)score.textContent=`${answered.length} / ${qs.length} answered`;
+  wrap.dataset.correct=oi===q.answer?'1':'0';
+  const block=wrap.closest('#vocabQuiz');const answered=[...block.querySelectorAll('[data-practice-question]')].filter(x=>x.dataset.answered==='1');const correct=answered.filter(x=>x.dataset.correct==='1').length;
+  const score=block.querySelector('[data-vocab-quiz-score]');if(score)score.textContent=answered.length===qs.length?`${correct}/${qs.length} doğru · tamamlandı`:`${correct}/${answered.length} doğru · ${answered.length}/${qs.length} cevaplandı`;
 }
 
 

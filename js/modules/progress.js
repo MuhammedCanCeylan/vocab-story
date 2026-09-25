@@ -1,7 +1,7 @@
-import { BOOKS } from '../data/books.js?v=4.1.2';
-import { getState, dayKey } from '../services/storage.js?v=4.1.2';
-import { getDueWords } from '../services/srs.js?v=4.1.2';
-import { icon } from '../ui/icons.js?v=4.1.2';
+import { BOOKS } from '../data/books.js?v=4.2.0';
+import { getState, dayKey } from '../services/storage.js?v=4.2.0';
+import { getDueWords } from '../services/srs.js?v=4.2.0';
+import { icon } from '../ui/icons.js?v=4.2.0';
 
 function week() {
   const days=[];

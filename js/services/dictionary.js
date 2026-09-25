@@ -1,6 +1,7 @@
-import { getState, updateState } from './storage.js?v=4.1.2';
-import { normalizeKey } from './srs.js?v=4.1.2';
-import { generateJson, extractGeminiJson } from './gemini.js?v=4.1.2';
+import { getState, updateState } from './storage.js?v=4.2.0';
+import { normalizeKey } from './srs.js?v=4.2.0';
+import { generateJson, extractGeminiJson } from './gemini.js?v=4.2.0';
+import { coreDictionaryEntry } from '../data/coreDictionary.js?v=4.2.0';
 
 function fromVocabulary(word) {
   const key=normalizeKey(word);
@@ -13,11 +14,16 @@ export function getCachedWord(word) {
   if(!key)return null;
   const vocab=fromVocabulary(word);
   const dict=getState().dictionary?.[key]||null;
-  if(vocab&&dict){
-    const filled=Object.fromEntries(Object.entries(vocab).filter(([,v])=>v!==undefined&&v!==null&&v!==''));
-    return {...dict,...filled};
+  const local=coreDictionaryEntry(word);
+  const layers=[local,dict,vocab].filter(Boolean);
+  if(!layers.length)return null;
+  const merged={word};
+  for(const layer of layers){
+    for(const [k,v] of Object.entries(layer)){
+      if(v!==undefined&&v!==null&&v!=='')merged[k]=v;
+    }
   }
-  return vocab||dict||null;
+  return merged;
 }
 
 export async function lookupWord(word,{context='',level='A2'}={}) {
@@ -37,7 +43,7 @@ export async function lookupWord(word,{context='',level='A2'}={}) {
   return entry;
 }
 
-export async function lookupWordsBatch(words,{context='',level='A2',onAttempt}={}) {
+export async function lookupWordsBatch(words,{context='',contexts={},level='A2',onAttempt}={}) {
   const unique=[...new Map(words.map(w=>[normalizeKey(w),w])).values()].filter(Boolean);
   const missing=unique.filter(w=>{const x=getCachedWord(w);return !(x?.meaningTr && x?.definitionEn);});
   if(!missing.length)return unique.map(w=>getCachedWord(w)).filter(Boolean);
@@ -46,15 +52,17 @@ export async function lookupWordsBatch(words,{context='',level='A2',onAttempt}={
   const chunks=[];for(let i=0;i<missing.length;i+=55)chunks.push(missing.slice(i,i+55));
   for(let ci=0;ci<chunks.length;ci++){
     const batch=chunks[ci];
-    const prompt=`You are an English-Turkish learner dictionary. Student level: ${level}. Context: "${context}". For EVERY item in this exact list, return a learner-friendly entry: ${JSON.stringify(batch)}. Return ONLY JSON: {"items":[{"word":"same requested word","ipa":"/American IPA/","definitionEn":"short simple English definition","meaningTr":"natural Turkish meaning, prefer the context meaning","type":"part of speech or phrase","level":"estimated CEFR"}]}. Do not skip function words such as articles, pronouns, prepositions or conjunctions. Do not add markdown.`;
+    const requestItems=batch.map(word=>({word,context:contexts?.[normalizeKey(word)]?.text||contexts?.[normalizeKey(word)]||context||''}));
+    const prompt=`You are an English-Turkish learner dictionary. Student level: ${level}. Translate EVERY requested English item into the natural Turkish meaning it has in its own context sentence. Do not skip articles, pronouns, prepositions, conjunctions, auxiliaries, or inflected verbs. Requested items: ${JSON.stringify(requestItems)}. Return ONLY JSON: {"items":[{"requested":"exact requested surface form","word":"dictionary headword or same form","ipa":"/American IPA/ or empty for function words if unnecessary","definitionEn":"short simple English definition","meaningTr":"natural Turkish meaning in the supplied context","type":"part of speech or phrase","level":"estimated CEFR"}]}. Keep one result for every requested word and do not add markdown.`;
     const {data}=await generateJson(prompt,{onAttempt:info=>onAttempt?.({...info,batch:ci+1,totalBatches:chunks.length})});
     const result=extractGeminiJson(data);
     const items=Array.isArray(result.items)?result.items:[];
     updateState(s=>{
       if(!s.dictionary)s.dictionary={};
       for(const item of items){
-        const k=normalizeKey(item.word); if(!k)continue;
-        s.dictionary[k]={word:item.word,ipa:item.ipa||'',definitionEn:item.definitionEn||'',meaningTr:item.meaningTr||'',example:'',type:item.type||'word',level:item.level||level,source:'dictionary'};
+        const requested=item.requested||item.word;
+        const k=normalizeKey(requested); if(!k)continue;
+        s.dictionary[k]={word:requested,lemma:item.word||requested,ipa:item.ipa||'',definitionEn:item.definitionEn||'',meaningTr:item.meaningTr||'',example:'',type:item.type||'word',level:item.level||level,source:'dictionary'};
       }
     });
   }

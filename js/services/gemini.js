@@ -1,5 +1,5 @@
-import { APP_CONFIG } from '../config.js?v=4.1.2';
-import { getState, updateState } from './storage.js?v=4.1.2';
+import { APP_CONFIG } from '../config.js?v=4.2.0';
+import { getState, updateState } from './storage.js?v=4.2.0';
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const retryable = status => [408,429,500,502,503,504].includes(Number(status));

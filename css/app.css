@@ -213,3 +213,27 @@ button { cursor:pointer; }
 .study-answer strong { display:block; font-size:22px; }
 .study-answer p { color:var(--text-2); }
 .saved-sentence-list { max-height:360px; overflow:auto; }
+
+/* V4.2 vocabulary layout: keep filter tabs inside the card */
+.vocab-toolbar {
+  grid-template-columns:minmax(0,1fr);
+  gap:10px;
+}
+.vocab-filter {
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  overflow:hidden;
+}
+.vocab-filter button {
+  min-width:0;
+  width:100%;
+  padding-inline:8px;
+  white-space:nowrap;
+}
+@media (max-width:560px) {
+  .vocab-filter { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; background:transparent; padding:0; }
+  .vocab-filter button { background:var(--surface-soft); border:1px solid var(--border); border-radius:11px; }
+  .vocab-filter button.active { background:var(--surface-solid); }
+}

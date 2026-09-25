@@ -1,8 +1,8 @@
-import { icon } from './icons.js?v=4.1.2';
-import { speak } from '../services/speech.js?v=4.1.2';
-import { ensureVocab, normalizeKey, setWordStatus } from '../services/srs.js?v=4.1.2';
-import { getState } from '../services/storage.js?v=4.1.2';
-import { toast } from './toast.js?v=4.1.2';
+import { icon } from './icons.js?v=4.2.0';
+import { speak } from '../services/speech.js?v=4.2.0';
+import { ensureVocab, normalizeKey, setWordStatus } from '../services/srs.js?v=4.2.0';
+import { getState } from '../services/storage.js?v=4.2.0';
+import { toast } from './toast.js?v=4.2.0';
 
 let activeEntry = null;
 
@@ -33,7 +33,8 @@ export function openWordModal(entry) {
       <strong>Türkçe bağlam anlamı</strong>
       <p>${escapeHtml(entry.meaningTr || 'Henüz Türkçe anlam eklenmemiş.')}</p>
     </div>
-    ${entry.example ? `<div class="word-example"><p>${escapeHtml(entry.example)}</p></div>` : ''}
+    ${entry.contextSentence ? `<div class="reader-context-card"><strong>Hikâyedeki cümle</strong><p class="context-en">${escapeHtml(entry.contextSentence)}</p><p class="context-tr">${escapeHtml(entry.contextSentenceTr || 'Cümle çevirisi yok.')}</p></div>` : ''}
+    ${entry.example && entry.example !== entry.contextSentence ? `<div class="word-example"><p>${escapeHtml(entry.example)}</p></div>` : ''}
     <div class="word-status-actions" id="modalStatusActions">
       <button class="word-status-btn learning ${status==='learning'?'active':''}" data-status="learning" type="button">${icon('plus')} Öğrenilecek</button>
       <button class="word-status-btn review ${status==='review'?'active':''}" data-status="review" type="button">${icon('rotate')} Tekrar</button>
@@ -51,7 +52,7 @@ export function openWordModal(entry) {
     setWordStatus(item.id,btn.dataset.status);
     document.querySelectorAll('#modalStatusActions [data-status]').forEach(x=>x.classList.toggle('active',x===btn));
     const encoded=encodeURIComponent(normalizeKey(entry.word));
-    document.querySelectorAll(`[data-word-key="${encoded}"]`).forEach(el=>{el.classList.remove('status-unsaved','status-learning','status-review','status-mastered');el.classList.add(`status-${btn.dataset.status}`);const small=el.querySelector('small');if(small&&el.classList.contains('chapter-vocab-pill'))small.textContent=btn.dataset.status==='mastered'?'Öğrenildi':btn.dataset.status==='review'?'Tekrar':'Öğreniliyor';});
+    document.querySelectorAll(`[data-word-key="${encoded}"]`).forEach(el=>{el.classList.remove('status-unsaved','status-learning','status-review','status-mastered');el.classList.add(`status-${btn.dataset.status}`);if(el.classList.contains('reader-word')||el.classList.contains('chapter-word-row'))el.classList.add('in-vocabulary');const small=el.querySelector('small');if(small&&el.classList.contains('chapter-vocab-pill'))small.textContent=btn.dataset.status==='mastered'?'Öğrenildi':btn.dataset.status==='review'?'Tekrar':'Öğreniliyor';});
     toast(btn.dataset.status==='mastered'?`“${entry.word}” öğrenildi olarak işaretlendi.`:btn.dataset.status==='review'?`“${entry.word}” tekrar listesine alındı.`:`“${entry.word}” öğrenme listesine eklendi.`);
   });
   modal.classList.add('visible');
